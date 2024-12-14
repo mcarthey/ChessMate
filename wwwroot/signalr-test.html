@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>SignalR Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@7.0.5/dist/browser/signalr.min.js"></script>
+</head>
+<body>
+<h1>SignalR Test</h1>
+<input type="text" id="move" placeholder="Enter a move" />
+<button onclick="sendMove()">Send Move</button>
+<ul id="moves"></ul>
+
+<script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chesshub")
+            .build();
+
+        connection.on("ReceiveMove", (move) => {
+            const li = document.createElement("li");
+            li.textContent = move;
+            document.getElementById("moves").appendChild(li);
+        });
+
+        connection.start().then(() => console.log("Connected!"));
+
+        function sendMove() {
+            const move = document.getElementById("move").value;
+            connection.invoke("SendMove", move);
+        }
+    </script>
+</body>
+</html>

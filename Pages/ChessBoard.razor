@@ -1,0 +1,98 @@
+﻿@page "/chess"
+@using ChessMate.Services
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+@inject ChessService ChessService
+
+<h3>Chess Game</h3>
+
+<table class="chessboard">
+    @for (int row = 0; row < 8; row++)
+    {
+        int currentRow = row; // capture row locally
+        <tr>
+            @for (int col = 0; col < 8; col++)
+            {
+                int currentCol = col; // capture col locally
+                <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
+                    @ChessService.Game.GetPiece(currentRow, currentCol)
+                </td>
+            }
+        </tr>
+    }
+</table>
+
+<p>Selected Square: @selectedSquare</p>
+<p>Last Move: @lastMove</p>
+
+@code {
+    private HubConnection? hubConnection;
+    private string? selectedSquare;
+    private string? lastMove;
+
+    // We'll store the currently selected position as a tuple.
+    private (int row, int col)? selectedPosition;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/chesshub"))
+            .Build();
+
+        hubConnection.On<string, string>("ReceiveMove", async (start, end) =>
+        {
+            lastMove = $"{start} -> {end}";
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task SelectSquare(int row, int col)
+    {
+        if (selectedPosition == null)
+        {
+    // First click: select piece
+            var piece = ChessService.Game.GetPiece(row, col);
+            if (!string.IsNullOrEmpty(piece))
+            {
+                selectedPosition = (row, col);
+                selectedSquare = $"{row},{col}";
+            }
+        }
+        else
+        {
+    // Second click: move piece
+            var (startRow, startCol) = selectedPosition.Value;
+            bool moveSuccess = ChessService.MovePiece(startRow, startCol, row, col);
+        
+            if (moveSuccess)
+            {
+    // Update board and notify
+                var startSquareNotation = $"{startRow},{startCol}";
+                var endSquareNotation = $"{row},{col}";
+                await hubConnection.SendAsync("SendMove", startSquareNotation, endSquareNotation);
+
+                lastMove = $"{startSquareNotation} -> {endSquareNotation}";
+            }
+
+            selectedPosition = null;
+            selectedSquare = null;
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string GetSquareClass(int row, int col)
+    {
+        return (row + col) % 2 == 0 ? "light" : "dark";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
