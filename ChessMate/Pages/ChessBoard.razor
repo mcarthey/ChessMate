@@ -52,9 +52,9 @@
     {
         if (selectedPosition == null)
         {
-    // First click: select piece
+            // First click: select piece
             var piece = ChessService.Game.GetPiece(row, col);
-            if (!string.IsNullOrEmpty(piece))
+            if (!string.IsNullOrEmpty(piece)) // Ensure a piece is selected
             {
                 selectedPosition = (row, col);
                 selectedSquare = $"{row},{col}";
@@ -62,13 +62,13 @@
         }
         else
         {
-    // Second click: move piece
+            // Second click: move piece
             var (startRow, startCol) = selectedPosition.Value;
-            bool moveSuccess = ChessService.MovePiece(startRow, startCol, row, col);
-        
+            bool moveSuccess = ChessService.MovePiece((startRow, startCol), (row, col));
+
             if (moveSuccess)
             {
-    // Update board and notify
+                // Update board and notify
                 var startSquareNotation = $"{startRow},{startCol}";
                 var endSquareNotation = $"{row},{col}";
                 await hubConnection.SendAsync("SendMove", startSquareNotation, endSquareNotation);
@@ -76,6 +76,7 @@
                 lastMove = $"{startSquareNotation} -> {endSquareNotation}";
             }
 
+            // Reset selection
             selectedPosition = null;
             selectedSquare = null;
 
