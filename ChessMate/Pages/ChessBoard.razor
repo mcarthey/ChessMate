@@ -15,7 +15,7 @@
             {
                 int currentCol = col; // capture col locally
                 <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
-                    @ChessService.Game.GetPiece(currentRow, currentCol)
+                    @(ChessService.Game.Board[currentRow, currentCol]?.Representation ?? "")
                 </td>
             }
         </tr>
@@ -53,8 +53,8 @@
         if (selectedPosition == null)
         {
             // First click: select piece
-            var piece = ChessService.Game.GetPiece(row, col);
-            if (!string.IsNullOrEmpty(piece)) // Ensure a piece is selected
+            var piece = ChessService.Game.Board[row, col];
+            if (piece != null) // Ensure a piece is selected
             {
                 selectedPosition = (row, col);
                 selectedSquare = $"{row},{col}";

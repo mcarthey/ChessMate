@@ -23,7 +23,9 @@ namespace ChessMate.Services
             Board[0, 6] = new Knight("White", (0, 6));
             Board[0, 7] = new Rook("White", (0, 7));
             for (int col = 0; col < 8; col++)
+            {
                 Board[1, col] = new Pawn("White", (1, col));
+            }
 
             // Black pieces
             Board[7, 0] = new Rook("Black", (7, 0));
@@ -35,21 +37,35 @@ namespace ChessMate.Services
             Board[7, 6] = new Knight("Black", (7, 6));
             Board[7, 7] = new Rook("Black", (7, 7));
             for (int col = 0; col < 8; col++)
+            {
                 Board[6, col] = new Pawn("Black", (6, col));
-        }
+            }
 
-        public string GetPiece(int row, int col)
-        {
-            var piece = Board[row, col];
-            return piece != null ? piece.Representation : ""; // Return the piece's symbol or empty string
+            // Empty squares
+            for (int row = 2; row < 6; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    Board[row, col] = null; // Ensure empty squares are explicitly set to null
+                }
+            }
         }
 
         public bool MovePiece((int Row, int Col) from, (int Row, int Col) to)
         {
             var piece = Board[from.Row, from.Col];
-            if (piece == null || !piece.IsValidMove(to, Board))
+            if (piece == null)
             {
-                return false; // Invalid move
+                Console.WriteLine($"No piece at position {from}");
+                return false;
+            }
+
+            bool isValid = piece.IsValidMove(to, Board);
+            Console.WriteLine($"{piece?.Representation} move from {from} to {to}: {(isValid ? "Valid" : "Invalid")}");
+
+            if (!isValid)
+            {
+                return false; // Move rejected
             }
 
             // Perform the move
@@ -58,5 +74,23 @@ namespace ChessMate.Services
             piece.Position = to;
             return true;
         }
+
+
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        public void PrintBoard()
+        {
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    var piece = Board[row, col];
+                    Console.Write(piece?.Representation ?? ".");
+                }
+                Console.WriteLine(); // Move to the next row
+            }
+            Console.WriteLine(); // Add a blank line for spacing
+        }
+
     }
 }
