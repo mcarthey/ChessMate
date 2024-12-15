@@ -1,4 +1,5 @@
 using System.Text;
+using ChessMate.Models;
 using ChessMate.Services;
 using Xunit.Abstractions;
 
@@ -13,22 +14,53 @@ public abstract class TestHelper
         CustomOutput = new CustomTestOutputHelper(output);
     }
 
-    protected void PrintBoard(ChessGame chessGame)
+    protected void PrintBoard(IChessBoard board)
     {
-        CustomOutput.WriteLine("  A  B  C  D  E  F  G  H");
-        CustomOutput.WriteLine(" +-----------------------+");
+        var whiteSpace = " ";
+        var columnHeaders = new StringBuilder($"{whiteSpace,2}");
+        for (char col = 'A'; col <= 'H'; col++)
+        {
+            columnHeaders.Append($"{col,5}");
+        }
+
+        string separator = "  +--------------------------------------+";
+
+        CustomOutput.WriteLine(columnHeaders.ToString());
+        CustomOutput.WriteLine(separator);
         for (int row = 0; row < 8; row++)
         {
             var rowBuilder = new StringBuilder();
-            rowBuilder.Append(8 - row).Append("|");
+            rowBuilder.Append($"{8 - row} |");
             for (int col = 0; col < 8; col++)
             {
-                var piece = chessGame.Board.ChessPieces[row, col];
-                rowBuilder.Append((piece?.Representation ?? ".").PadRight(3));
+                var piece = board.ChessPieces[row, col];
+                if (piece?.Representation is null)
+                {
+                    rowBuilder.Append($"{" . ",5}");
+                }
+                else 
+                {
+                    rowBuilder.Append($"{piece?.Representation,4}");
+                }
             }
-            rowBuilder.Append("|");
+            rowBuilder.Append($"| {8 - row}");
             CustomOutput.WriteLine(rowBuilder.ToString());
         }
-        CustomOutput.WriteLine(" +-----------------------+");
+        CustomOutput.WriteLine(separator);
+        CustomOutput.WriteLine(columnHeaders.ToString());
+    }
+
+    protected ChessBoard InitializeCustomBoard(params (ChessPiece piece, (int Row, int Col) position)[] pieces)
+    {
+        var chessBoard = new ChessBoard();
+        chessBoard.ChessPieces = new ChessPiece[8, 8]; // Clear the board
+
+        foreach (var (piece, position) in pieces)
+        {
+            chessBoard.ChessPieces[position.Row, position.Col] = piece;
+            piece.Position = position;
+        }
+
+        return chessBoard;
     }
 }

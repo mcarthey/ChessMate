@@ -34,7 +34,7 @@ public class ChessGameTests : TestHelper
         var blackKing = chessGame.Board.ChessPieces[0, 4];
 
         // Debugging output
-        PrintBoard(chessGame);
+        PrintBoard(chessGame.Board);
         CustomOutput.Flush();
 
         // Assert
