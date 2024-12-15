@@ -32,3 +32,12 @@
 .chessboard .dark {
     background-color: #b58863;
 }
+
+/* Highlighting classes */
+.chessboard .highlight {
+    background-color: #ffeb3b; /* Yellow highlight */
+}
+
+.chessboard .highlight-capture {
+    background-color: #f44336; /* Red highlight for capture */
+}

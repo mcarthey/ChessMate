@@ -1,4 +1,5 @@
 ﻿@page "/chess"
+@using ChessMate.Models
 @using ChessMate.Services
 @using ChessMate.Utilities
 @using Microsoft.AspNetCore.SignalR.Client
@@ -59,6 +60,7 @@
 
     // We'll store the currently selected position as a tuple.
     private (int row, int col)? selectedPosition;
+    private List<(int row, int col)> possibleMoves = new List<(int row, int col)>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,6 +88,7 @@
             {
                 selectedPosition = (row, col);
                 selectedSquare = notation;
+                possibleMoves = GetPossibleMoves(piece, row, col);
             }
         }
         else
@@ -101,14 +104,43 @@
 
             selectedPosition = null;
             selectedSquare = null;
+            possibleMoves.Clear();
         }
 
         await InvokeAsync(StateHasChanged);
     }
 
+    private List<(int row, int col)> GetPossibleMoves(ChessPiece piece, int row, int col)
+    {
+        var moves = new List<(int row, int col)>();
+
+        for (int r = 0; r < 8; r++)
+        {
+            for (int c = 0; c < 8; c++)
+            {
+                if (piece.IsValidMove((r, c), game.Board as Models.ChessBoard))
+                {
+                    moves.Add((r, c));
+                }
+            }
+        }
+
+        return moves;
+    }
+
     private string GetSquareClass(int row, int col)
     {
-        return (row + col) % 2 == 0 ? "light" : "dark";
+        var baseClass = (row + col) % 2 == 0 ? "light" : "dark";
+        if (possibleMoves.Contains((row, col)))
+        {
+            var piece = game.Board.ChessPieces[row, col];
+            if (piece != null && piece.Color != game.Board.ChessPieces[selectedPosition.Value.row, selectedPosition.Value.col].Color)
+            {
+                return $"{baseClass} highlight-capture";
+            }
+            return $"{baseClass} highlight";
+        }
+        return baseClass;
     }
 
     public async ValueTask DisposeAsync()
