@@ -1,5 +1,6 @@
 ﻿@page "/chess"
 @using ChessMate.Services
+@using ChessMate.Utilities
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
 @inject ChessService ChessService
@@ -7,19 +8,45 @@
 <h3>Chess Game</h3>
 
 <table class="chessboard">
-    @for (int row = 0; row < 8; row++)
-    {
-        int currentRow = row; // capture row locally
+    <thead>
+        <!-- Add column headers -->
         <tr>
-            @for (int col = 0; col < 8; col++)
+            <th></th> <!-- Empty corner cell -->
+            @for (char col = 'a'; col <= 'h'; col++)
             {
-                int currentCol = col; // capture col locally
-                <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
-                    @(ChessService.Game.Board[currentRow, currentCol]?.Representation ?? "")
-                </td>
+                <th>@col</th> <!-- Column labels (a, b, c, ...) -->
             }
+            <th></th> <!-- Empty cell for symmetry -->
         </tr>
-    }
+    </thead>
+    <tbody>
+        @for (int row = 0; row < 8; row++)
+        {
+            int currentRow = row; // capture row locally
+            <tr>
+                <th>@(8 - currentRow)</th> <!-- Row label (8, 7, 6, ...) -->
+                @for (int col = 0; col < 8; col++)
+                {
+                    int currentCol = col; // capture col locally
+                    <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
+                        @(ChessService.Game.Board[currentRow, currentCol]?.Representation ?? "")
+                    </td>
+                }
+                <th>@(8 - currentRow)</th> <!-- Row label on the other side -->
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <!-- Add column headers at the bottom -->
+        <tr>
+            <th></th> <!-- Empty corner cell -->
+            @for (char col = 'a'; col <= 'h'; col++)
+            {
+                <th>@col</th> <!-- Column labels (a, b, c, ...) -->
+            }
+            <th></th> <!-- Empty cell for symmetry -->
+        </tr>
+    </tfoot>
 </table>
 
 <p>Selected Square: @selectedSquare</p>
@@ -50,39 +77,35 @@
 
     private async Task SelectSquare(int row, int col)
     {
+        string notation = ChessNotationUtility.ToChessNotation((row, col));
+
         if (selectedPosition == null)
         {
-            // First click: select piece
             var piece = ChessService.Game.Board[row, col];
-            if (piece != null) // Ensure a piece is selected
+            if (piece != null)
             {
                 selectedPosition = (row, col);
-                selectedSquare = $"{row},{col}";
+                selectedSquare = notation;
             }
         }
         else
         {
-            // Second click: move piece
             var (startRow, startCol) = selectedPosition.Value;
-            bool moveSuccess = ChessService.MovePiece((startRow, startCol), (row, col));
+            string fromNotation = ChessNotationUtility.ToChessNotation((startRow, startCol));
+            bool moveSuccess = ChessService.MovePiece(fromNotation, notation);
 
             if (moveSuccess)
             {
-                // Update board and notify
-                var startSquareNotation = $"{startRow},{startCol}";
-                var endSquareNotation = $"{row},{col}";
-                await hubConnection.SendAsync("SendMove", startSquareNotation, endSquareNotation);
-
-                lastMove = $"{startSquareNotation} -> {endSquareNotation}";
+                lastMove = $"{fromNotation} -> {notation}";
             }
 
-            // Reset selection
             selectedPosition = null;
             selectedSquare = null;
-
-            await InvokeAsync(StateHasChanged);
         }
+
+        await InvokeAsync(StateHasChanged);
     }
+
 
     private string GetSquareClass(int row, int col)
     {

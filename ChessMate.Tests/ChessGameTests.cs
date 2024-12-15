@@ -2,7 +2,6 @@ using ChessMate.Models;
 using ChessMate.Services;
 using Xunit;
 using Xunit.Abstractions;
-using System.IO;
 using System.Text;
 
 namespace ChessMate.Tests;
@@ -28,7 +27,8 @@ public class ChessGameTests
         var whiteRook = chessGame.Board[0, 0];
         var blackKing = chessGame.Board[7, 4];
 
-        // Flush buffered output to test runner
+        // Debugging output
+        PrintBoard(chessGame);
         _customOutput.Flush();
 
         // Assert
@@ -45,8 +45,8 @@ public class ChessGameTests
     {
         // Arrange
         var chessGame = new ChessGame();
-        var start = (1, 0); // White Pawn at (1,0)
-        var target = (2, 0); // One square forward
+        string start = "a2";
+        string target = "a3";
 
         // Act
         bool moveSuccess = chessGame.MovePiece(start, target);
@@ -56,14 +56,12 @@ public class ChessGameTests
         _customOutput.WriteLine($"Move Success: {moveSuccess}");
         _customOutput.WriteLine("Board after move:");
         PrintBoard(chessGame);
-
-        // Flush buffered output to test runner
         _customOutput.Flush();
 
         // Assert
         Assert.True(moveSuccess, "The move should be successful.");
-        Assert.Null(chessGame.Board[start.Item1, start.Item2]);
-        Assert.IsType<Pawn>(chessGame.Board[target.Item1, target.Item2]);
+        Assert.Null(chessGame.Board[6, 0]); // Row 6, Col 0 (a2)
+        Assert.IsType<Pawn>(chessGame.Board[5, 0]); // Row 5, Col 0 (a3)
     }
 
     [Fact]
@@ -71,8 +69,8 @@ public class ChessGameTests
     {
         // Arrange
         var chessGame = new ChessGame();
-        var start = (6, 0); // Black Pawn at A7
-        var target = (4, 0); // A5 (two squares forward)
+        string start = "a7";
+        string target = "a5";
 
         // Act
         bool moveSuccess = chessGame.MovePiece(start, target);
@@ -81,16 +79,13 @@ public class ChessGameTests
         _customOutput.WriteLine("Test: MovePiece_ShouldAllowTwoSquaresOnFirstMove");
         _customOutput.WriteLine($"Attempted move from {start} to {target}");
         _customOutput.WriteLine($"Move Success: {moveSuccess}");
-        _customOutput.WriteLine("Board after move:");
         PrintBoard(chessGame);
-
-        // Flush buffered output to test runner
         _customOutput.Flush();
 
         // Assert
         Assert.True(moveSuccess, "The Pawn should be able to move two squares forward on its first move.");
-        Assert.Null(chessGame.Board[start.Item1, start.Item2]);
-        Assert.IsType<Pawn>(chessGame.Board[target.Item1, target.Item2]);
+        Assert.Null(chessGame.Board[6, 0]); // Row 6, Col 0 (a7)
+        Assert.IsType<Pawn>(chessGame.Board[4, 0]); // Row 4, Col 0 (a5)
     }
 
     [Fact]
@@ -98,32 +93,28 @@ public class ChessGameTests
     {
         // Arrange
         var chessGame = new ChessGame();
-        var start = (6, 0); // Black Pawn at A7
-        var firstMoveTarget = (5, 0); // A6 (one square forward)
-        var invalidTarget = (3, 0); // A5 (two squares forward, invalid after the first move)
+        string firstMove = "a7";
+        string firstTarget = "a6";
+        string invalidTarget = "a4";
 
         // Act
-        bool firstMoveSuccess = chessGame.MovePiece(start, firstMoveTarget);
-        bool moveSuccess = chessGame.MovePiece(firstMoveTarget, invalidTarget);
+        bool firstMoveSuccess = chessGame.MovePiece(firstMove, firstTarget);
+        bool moveSuccess = chessGame.MovePiece(firstTarget, invalidTarget);
 
         // Debugging output
         _customOutput.WriteLine("Test: MovePiece_ShouldRejectTwoSquaresAfterFirstMove");
         _customOutput.WriteLine($"First move success: {firstMoveSuccess}");
-        _customOutput.WriteLine($"Attempted move from {firstMoveTarget} to {invalidTarget}");
+        _customOutput.WriteLine($"Attempted move from {firstTarget} to {invalidTarget}");
         _customOutput.WriteLine($"Move Success: {moveSuccess}");
-        _customOutput.WriteLine("Board after attempted move:");
         PrintBoard(chessGame);
-
-        // Flush buffered output to test runner
         _customOutput.Flush();
 
         // Assert
         Assert.True(firstMoveSuccess, "The first move should have been successful.");
         Assert.False(moveSuccess, "The two-square move should have been rejected after the first move.");
-        Assert.IsType<Pawn>(chessGame.Board[firstMoveTarget.Item1, firstMoveTarget.Item2]); // Ensure Pawn is still in original position
-        Assert.Null(chessGame.Board[invalidTarget.Item1, invalidTarget.Item2]); // Ensure target square is still empty
+        Assert.IsType<Pawn>(chessGame.Board[5, 0]); // Row 5, Col 0 (a6)
+        Assert.Null(chessGame.Board[3, 0]); // Row 3, Col 0 (a4)
     }
-
 
     private void PrintBoard(ChessGame chessGame)
     {
@@ -148,23 +139,23 @@ public class ChessGameTests
     public void Pawn_ShouldRejectTwoSquaresAfterFirstMove()
     {
         // Arrange
-        var pawn = new Pawn("White", (2, 0)); // Place Pawn one square forward
+        var pawn = new Pawn("White", (6, 0)); // Place Pawn at a7
         var board = new ChessPiece[8, 8];
-        board[2, 0] = pawn;
+        board[6, 0] = pawn;
 
         // Act
-        bool moveSuccess = pawn.IsValidMove((4, 0), board); // Attempt two-square move
+        bool firstMoveSuccess = pawn.IsValidMove((4, 0), board); // Valid two-square move
+        pawn.Position = (5, 0); // Move pawn to a6
+        bool moveSuccess = pawn.IsValidMove((3, 0), board); // Invalid two-square move after first
 
         // Debugging output
         _customOutput.WriteLine("Test: Pawn_ShouldRejectTwoSquaresAfterFirstMove");
-        _customOutput.WriteLine($"Attempted move from {pawn.Position} to (4, 0)");
-        _customOutput.WriteLine($"Move Success: {moveSuccess}");
-
-        // Flush buffered output to test runner
+        _customOutput.WriteLine($"First move success: {firstMoveSuccess}");
+        _customOutput.WriteLine($"Second move success: {moveSuccess}");
         _customOutput.Flush();
 
         // Assert
+        Assert.True(firstMoveSuccess, "The Pawn should be able to move two squares forward on its first move.");
         Assert.False(moveSuccess, "The Pawn should not be able to move two squares after the first move.");
     }
 }
-

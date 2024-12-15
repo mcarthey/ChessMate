@@ -1,4 +1,6 @@
-﻿namespace ChessMate.Services
+﻿using ChessMate.Utilities;
+
+namespace ChessMate.Services
 {
     public class ChessService
     {
@@ -9,18 +11,29 @@
             Game = new ChessGame();
         }
 
-        public bool MovePiece((int Row, int Col) from, (int Row, int Col) to)
+        public bool MovePiece(string fromNotation, string toNotation)
         {
-            bool success = Game.MovePiece(from, to);
+            if (!ChessNotationUtility.IsValidChessNotation(fromNotation) ||
+                !ChessNotationUtility.IsValidChessNotation(toNotation))
+            {
+                Console.WriteLine($"Invalid chess notation: from {fromNotation} to {toNotation}");
+                return false;
+            }
+
+            bool success = Game.MovePiece(fromNotation, toNotation);
+
             if (success)
             {
-                Console.WriteLine($"Moved piece from {from} to {to}");
+                Console.WriteLine($"Moved piece from {fromNotation} to {toNotation}");
             }
             else
             {
-                Console.WriteLine($"Failed to move piece from {from} to {to}");
+                Console.WriteLine($"Failed to move piece from {fromNotation} to {toNotation}");
             }
+
             return success;
         }
+
+
     }
 }

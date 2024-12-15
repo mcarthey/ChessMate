@@ -3,6 +3,16 @@
     margin: 20px;
 }
 
+.chessboard th {
+    text-align: center;
+    vertical-align: middle;
+    width: 50px; /* Match the width of your cells */
+    height: 50px; /* Optional, match the cell height for symmetry */
+    font-weight: bold;
+    background-color: #f0f0f0; /* Light background for visibility */
+    color: #333; /* Font color */
+}
+
 .chessboard td {
     width: 70px;
     height: 70px;

@@ -1,4 +1,5 @@
 ﻿using ChessMate.Models;
+using ChessMate.Utilities;
 
 namespace ChessMate.Services
 {
@@ -51,29 +52,37 @@ namespace ChessMate.Services
             }
         }
 
-        public bool MovePiece((int Row, int Col) from, (int Row, int Col) to)
+        public bool MovePiece(string fromNotation, string toNotation)
         {
+            if (!ChessNotationUtility.IsValidChessNotation(fromNotation) ||
+                !ChessNotationUtility.IsValidChessNotation(toNotation))
+            {
+                Console.WriteLine("Invalid chess notation provided.");
+                return false;
+            }
+
+            var from = ChessNotationUtility.FromChessNotation(fromNotation);
+            var to = ChessNotationUtility.FromChessNotation(toNotation);
+
             var piece = Board[from.Row, from.Col];
             if (piece == null)
             {
-                Console.WriteLine($"No piece at position {from}");
+                Console.WriteLine($"No piece at position {fromNotation}");
                 return false;
             }
 
             bool isValid = piece.IsValidMove(to, Board);
-            Console.WriteLine($"{piece?.Representation} move from {from} to {to}: {(isValid ? "Valid" : "Invalid")}");
+            Console.WriteLine($"{piece?.Representation} move from {fromNotation} to {toNotation}: {(isValid ? "Valid" : "Invalid")}");
 
             if (!isValid)
-            {
-                return false; // Move rejected
-            }
+                return false;
 
-            // Perform the move
             Board[to.Row, to.Col] = piece;
             Board[from.Row, from.Col] = null;
             piece.Position = to;
             return true;
         }
+
 
 
 
