@@ -1,6 +1,7 @@
-﻿namespace ChessMate.Models;
+﻿// ChessMate/Models/ChessBoard.cs
+namespace ChessMate.Models;
 
-public class ChessBoard
+public class ChessBoard : IChessBoard
 {
     public ChessPiece[,] ChessPieces { get; set; }
     public string Orientation { get; set; } // "White" or "Black"
@@ -71,3 +72,4 @@ public class ChessBoard
         return false;
     }
 }
+

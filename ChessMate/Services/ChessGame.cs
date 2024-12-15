@@ -1,41 +1,42 @@
-﻿using ChessMate.Models;
+﻿// ChessMate/Services/ChessGame.cs
+using ChessMate.Models;
 using ChessMate.Utilities;
 
-namespace ChessMate.Services
+namespace ChessMate.Services;
+
+public class ChessGame
 {
-    public class ChessGame
+    public IChessBoard Board { get; set; }
+
+    // Constructor accepting an IChessBoard, to be provided via DI
+    public ChessGame(IChessBoard board)
     {
-        public ChessBoard Board { get; private set; }
+        Board = board;
+    }
 
-        public ChessGame(string orientation = "White")
+    public bool MovePiece(string fromNotation, string toNotation)
+    {
+        if (!ChessNotationUtility.IsValidChessNotation(fromNotation) ||
+            !ChessNotationUtility.IsValidChessNotation(toNotation))
         {
-            Board = new ChessBoard(orientation);
+            Console.WriteLine("Invalid chess notation provided.");
+            return false;
         }
 
-        public bool MovePiece(string fromNotation, string toNotation)
+        var from = ChessNotationUtility.FromChessNotation(fromNotation);
+        var to = ChessNotationUtility.FromChessNotation(toNotation);
+
+        bool success = Board.MovePiece(from, to);
+
+        if (success)
         {
-            if (!ChessNotationUtility.IsValidChessNotation(fromNotation) ||
-                !ChessNotationUtility.IsValidChessNotation(toNotation))
-            {
-                Console.WriteLine("Invalid chess notation provided.");
-                return false;
-            }
-
-            var from = ChessNotationUtility.FromChessNotation(fromNotation);
-            var to = ChessNotationUtility.FromChessNotation(toNotation);
-
-            bool success = Board.MovePiece(from, to);
-
-            if (success)
-            {
-                Console.WriteLine($"Moved piece from {fromNotation} to {toNotation}");
-            }
-            else
-            {
-                Console.WriteLine($"Failed to move piece from {fromNotation} to {toNotation}");
-            }
-
-            return success;
+            Console.WriteLine($"Moved piece from {fromNotation} to {toNotation}");
         }
+        else
+        {
+            Console.WriteLine($"Failed to move piece from {fromNotation} to {toNotation}");
+        }
+
+        return success;
     }
 }

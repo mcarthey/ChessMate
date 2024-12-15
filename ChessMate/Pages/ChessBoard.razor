@@ -3,6 +3,7 @@
 @using ChessMate.Utilities
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
+@inject ChessGame game
 
 <h3>Chess Game</h3>
 
@@ -59,12 +60,8 @@
     // We'll store the currently selected position as a tuple.
     private (int row, int col)? selectedPosition;
 
-    private ChessGame game;
-
     protected override async Task OnInitializedAsync()
     {
-        game = new ChessGame();
-
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/chesshub"))
             .Build();
@@ -122,3 +119,4 @@
         }
     }
 }
+

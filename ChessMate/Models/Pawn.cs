@@ -31,8 +31,7 @@ public class Pawn : ChessPiece
 
         if (colDifference == 0 && rowDifference == 2 * forwardDirection && Position.Row == startingRow)
         {
-            var intermediatePosition = (Position.Row + forwardDirection, Position.Col);
-            if (IsTargetPositionEmpty(intermediatePosition, chessBoard) &&
+            if (IsPathClear(Position, targetPosition, chessBoard) &&
                 IsTargetPositionEmpty(targetPosition, chessBoard))
             {
                 return true;
