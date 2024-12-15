@@ -5,28 +5,48 @@ public class Pawn : ChessPiece
     public Pawn(string color, (int Row, int Col) position)
         : base(color, position, color == "White" ? "♙" : "♟") { }
 
-    public override bool IsValidMove((int Row, int Col) targetPosition, ChessPiece[,] board)
+    public override bool IsValidMove((int Row, int Col) targetPosition, ChessBoard chessBoard)
     {
-        int direction = Color == "White" ? 1 : -1; // White moves down, Black moves up
-        int rowDiff = targetPosition.Row - Position.Row;
-        int colDiff = targetPosition.Col - Position.Col;
+        // Check if target position is within board boundaries
+        if (!IsWithinBoardBounds(targetPosition))
+            return false;
 
-        // Move forward one square
-        if (colDiff == 0 && rowDiff == direction && board[targetPosition.Row, targetPosition.Col] == null)
+        // Determine forward direction based on color and board orientation
+        int forwardDirection = (Color == chessBoard.Orientation) ? -1 : 1;
+
+        int rowDifference = targetPosition.Row - Position.Row;
+        int colDifference = targetPosition.Col - Position.Col;
+
+        // Single square forward move
+        if (colDifference == 0 && rowDifference == forwardDirection)
         {
-            return true; // Valid single forward move
+            if (IsTargetPositionEmpty(targetPosition, chessBoard))
+                return true;
         }
 
-        // First move: allow two squares forward
-        if (colDiff == 0 && rowDiff == 2 * direction && Position.Row == (Color == "White" ? 1 : 6) &&
-            board[Position.Row + direction, Position.Col] == null &&
-            board[targetPosition.Row, targetPosition.Col] == null)
+        // Double square forward move on first move
+        int startingRow = (Color == "White")
+            ? (chessBoard.Orientation == "White" ? 6 : 1)
+            : (chessBoard.Orientation == "White" ? 1 : 6);
+
+        if (colDifference == 0 && rowDifference == 2 * forwardDirection && Position.Row == startingRow)
         {
-            return true; // Valid two-square move on the first move
+            var intermediatePosition = (Position.Row + forwardDirection, Position.Col);
+            if (IsTargetPositionEmpty(intermediatePosition, chessBoard) &&
+                IsTargetPositionEmpty(targetPosition, chessBoard))
+            {
+                return true;
+            }
         }
 
-        // Invalid move
+        // Diagonal capture move
+        if (Math.Abs(colDifference) == 1 && rowDifference == forwardDirection)
+        {
+            if (IsOpponentPieceAtPosition(targetPosition, chessBoard))
+                return true;
+        }
+
+        // Move is invalid
         return false;
     }
-
 }

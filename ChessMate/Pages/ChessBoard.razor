@@ -3,7 +3,6 @@
 @using ChessMate.Utilities
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
-@inject ChessService ChessService
 
 <h3>Chess Game</h3>
 
@@ -29,7 +28,7 @@
                 {
                     int currentCol = col; // capture col locally
                     <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
-                        @(ChessService.Game.Board[currentRow, currentCol]?.Representation ?? "")
+                        @(game.Board.ChessPieces[currentRow, currentCol]?.Representation ?? "")
                     </td>
                 }
                 <th>@(8 - currentRow)</th> <!-- Row label on the other side -->
@@ -60,8 +59,12 @@
     // We'll store the currently selected position as a tuple.
     private (int row, int col)? selectedPosition;
 
+    private ChessGame game;
+
     protected override async Task OnInitializedAsync()
     {
+        game = new ChessGame();
+
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/chesshub"))
             .Build();
@@ -81,7 +84,7 @@
 
         if (selectedPosition == null)
         {
-            var piece = ChessService.Game.Board[row, col];
+            var piece = game.Board.ChessPieces[row, col];
             if (piece != null)
             {
                 selectedPosition = (row, col);
@@ -92,7 +95,7 @@
         {
             var (startRow, startCol) = selectedPosition.Value;
             string fromNotation = ChessNotationUtility.ToChessNotation((startRow, startCol));
-            bool moveSuccess = ChessService.MovePiece(fromNotation, notation);
+            bool moveSuccess = game.MovePiece(fromNotation, notation);
 
             if (moveSuccess)
             {
@@ -105,7 +108,6 @@
 
         await InvokeAsync(StateHasChanged);
     }
-
 
     private string GetSquareClass(int row, int col)
     {

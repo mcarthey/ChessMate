@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ChessMate.Data;
-using ChessMate.Services;
 using Microsoft.AspNetCore.SignalR;
 using ChessMate.Hubs;
 
@@ -10,9 +9,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-
-// Register your custom ChessService
-builder.Services.AddSingleton<ChessService>();
 
 builder.Services.AddSingleton<WeatherForecastService>();
 
