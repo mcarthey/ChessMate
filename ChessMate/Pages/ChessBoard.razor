@@ -8,47 +8,65 @@
 
 <h3>Chess Game</h3>
 
-<table class="chessboard">
-    <thead>
-        <!-- Add column headers -->
-        <tr>
-            <th></th> <!-- Empty corner cell -->
-            @for (char col = 'a'; col <= 'h'; col++)
-            {
-                <th>@col</th> <!-- Column labels (a, b, c, ...) -->
-            }
-            <th></th> <!-- Empty cell for symmetry -->
-        </tr>
-    </thead>
-    <tbody>
-        @for (int row = 0; row < 8; row++)
-        {
-            int currentRow = row; // capture row locally
+<div class="chess-container">
+    <div class="chess-board">
+        <table class="chessboard">
+            <thead>
+            <!-- Add column headers -->
             <tr>
-                <th>@(8 - currentRow)</th> <!-- Row label (8, 7, 6, ...) -->
-                @for (int col = 0; col < 8; col++)
+                <th></th> <!-- Empty corner cell -->
+                @for (char col = 'a'; col <= 'h'; col++)
                 {
-                    int currentCol = col; // capture col locally
-                    <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
-                        @(game.Board.ChessPieces[currentRow, currentCol]?.Representation ?? "")
-                    </td>
+                    <th>@col</th> <!-- Column labels (a, b, c, ...) -->
                 }
-                <th>@(8 - currentRow)</th> <!-- Row label on the other side -->
+                <th></th> <!-- Empty cell for symmetry -->
             </tr>
-        }
-    </tbody>
-    <tfoot>
-        <!-- Add column headers at the bottom -->
-        <tr>
-            <th></th> <!-- Empty corner cell -->
-            @for (char col = 'a'; col <= 'h'; col++)
+            </thead>
+            <tbody>
+            @for (int row = 0; row < 8; row++)
             {
-                <th>@col</th> <!-- Column labels (a, b, c, ...) -->
+                int currentRow = row; // capture row locally
+                <tr>
+                    <th>@(8 - currentRow)</th> <!-- Row label (8, 7, 6, ...) -->
+                    @for (int col = 0; col < 8; col++)
+                    {
+                        int currentCol = col; // capture col locally
+                        <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
+                            @(game.Board.ChessPieces[currentRow, currentCol]?.Representation ?? "")
+                        </td>
+                    }
+                    <th>@(8 - currentRow)</th> <!-- Row label on the other side -->
+                </tr>
             }
-            <th></th> <!-- Empty cell for symmetry -->
-        </tr>
-    </tfoot>
-</table>
+            </tbody>
+            <tfoot>
+            <!-- Add column headers at the bottom -->
+            <tr>
+                <th></th> <!-- Empty corner cell -->
+                @for (char col = 'a'; col <= 'h'; col++)
+                {
+                    <th>@col</th> <!-- Column labels (a, b, c, ...) -->
+                }
+                <th></th> <!-- Empty cell for symmetry -->
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="move-log">
+        <h3>Move Log</h3>
+        <ul>
+            @foreach (var move in game.MoveLog)
+            {
+                <li>@move</li>
+            }
+        </ul>
+    </div>
+    <div class="ai-feedback">
+        <h3>AI Feedback</h3>
+        <p>@aiFeedback</p>
+        <button @onclick="GetFeedback">Analyze Game</button>
+    </div>
+</div>
 
 <p>Selected Square: @selectedSquare</p>
 <p>Last Move: @lastMove</p>
@@ -57,6 +75,7 @@
     private HubConnection? hubConnection;
     private string? selectedSquare;
     private string? lastMove;
+    private string aiFeedback = "No feedback yet.";
 
     // We'll store the currently selected position as a tuple.
     private (int row, int col)? selectedPosition;
@@ -75,6 +94,11 @@
         });
 
         await hubConnection.StartAsync();
+    }
+
+    private async Task GetFeedback()
+    {
+        aiFeedback = await game.GetGameAnalysisAsync();
     }
 
     private async Task SelectSquare(int row, int col)

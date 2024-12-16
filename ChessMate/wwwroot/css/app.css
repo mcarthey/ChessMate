@@ -41,3 +41,27 @@
 .chessboard .highlight-capture {
     background-color: #f44336; /* Red highlight for capture */
 }
+
+.chess-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.chess-board {
+    flex: 3; /* Take most of the screen space */
+}
+
+.move-log {
+    flex: 1; /* Smaller column for move log */
+    max-height: 600px;
+    overflow-y: auto; /* Enable scrolling for long games */
+    background-color: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.ai-feedback {
+    margin-top: 20px;
+}
