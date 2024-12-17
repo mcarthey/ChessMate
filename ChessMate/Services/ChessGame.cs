@@ -1,5 +1,4 @@
-﻿// ChessMate/Services/ChessGame.cs
-using ChessMate.Models;
+﻿using ChessMate.Models;
 using ChessMate.Utilities;
 
 namespace ChessMate.Services;
@@ -8,6 +7,7 @@ public class ChessGame
 {
     public IChessBoard Board { get; set; }
     public List<string> MoveLog { get; private set; } = new List<string>();
+    public string InvalidMoveReason => Board.InvalidMoveReason;
 
     // Constructor accepting an IChessBoard, to be provided via DI
     public ChessGame(IChessBoard board)
@@ -20,7 +20,8 @@ public class ChessGame
         if (!ChessNotationUtility.IsValidChessNotation(fromNotation) ||
             !ChessNotationUtility.IsValidChessNotation(toNotation))
         {
-            Console.WriteLine("Invalid chess notation provided.");
+            Board.InvalidMoveReason = "Invalid chess notation provided.";
+            Console.WriteLine(Board.InvalidMoveReason);
             return false;
         }
 
@@ -37,7 +38,7 @@ public class ChessGame
         }
         else
         {
-            Console.WriteLine($"Failed to move piece from {fromNotation} to {toNotation}");
+            Console.WriteLine($"Failed to move piece from {fromNotation} to {toNotation}: {Board.InvalidMoveReason}");
         }
 
         return success;
@@ -63,6 +64,5 @@ public class ChessGame
         var closestMatch = mockedResponses.Keys.OrderBy(k => Math.Abs(k - moveCount)).First();
         return mockedResponses[closestMatch];
     }
-
-
 }
+

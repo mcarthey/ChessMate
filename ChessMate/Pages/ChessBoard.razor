@@ -12,43 +12,43 @@
     <div class="chess-board">
         <table class="chessboard">
             <thead>
-            <!-- Add column headers -->
-            <tr>
-                <th></th> <!-- Empty corner cell -->
-                @for (char col = 'a'; col <= 'h'; col++)
-                {
-                    <th>@col</th> <!-- Column labels (a, b, c, ...) -->
-                }
-                <th></th> <!-- Empty cell for symmetry -->
-            </tr>
+                <!-- Add column headers -->
+                <tr>
+                    <th></th> <!-- Empty corner cell -->
+                    @for (char col = 'a'; col <= 'h'; col++)
+                    {
+                        <th>@col</th> <!-- Column labels (a, b, c, ...) -->
+                    }
+                    <th></th> <!-- Empty cell for symmetry -->
+                </tr>
             </thead>
             <tbody>
-            @for (int row = 0; row < 8; row++)
-            {
-                int currentRow = row; // capture row locally
-                <tr>
-                    <th>@(8 - currentRow)</th> <!-- Row label (8, 7, 6, ...) -->
-                    @for (int col = 0; col < 8; col++)
-                    {
-                        int currentCol = col; // capture col locally
-                        <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
-                            @(game.Board.ChessPieces[currentRow, currentCol]?.Representation ?? "")
-                        </td>
-                    }
-                    <th>@(8 - currentRow)</th> <!-- Row label on the other side -->
-                </tr>
-            }
+                @for (int row = 0; row < 8; row++)
+                {
+                    int currentRow = row; // capture row locally
+                    <tr>
+                        <th>@(8 - currentRow)</th> <!-- Row label (8, 7, 6, ...) -->
+                        @for (int col = 0; col < 8; col++)
+                        {
+                            int currentCol = col; // capture col locally
+                            <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
+                                @(game.Board.ChessPieces[currentRow, currentCol]?.Representation ?? "")
+                            </td>
+                        }
+                        <th>@(8 - currentRow)</th> <!-- Row label on the other side -->
+                    </tr>
+                }
             </tbody>
             <tfoot>
-            <!-- Add column headers at the bottom -->
-            <tr>
-                <th></th> <!-- Empty corner cell -->
-                @for (char col = 'a'; col <= 'h'; col++)
-                {
-                    <th>@col</th> <!-- Column labels (a, b, c, ...) -->
-                }
-                <th></th> <!-- Empty cell for symmetry -->
-            </tr>
+                <!-- Add column headers at the bottom -->
+                <tr>
+                    <th></th> <!-- Empty corner cell -->
+                    @for (char col = 'a'; col <= 'h'; col++)
+                    {
+                        <th>@col</th> <!-- Column labels (a, b, c, ...) -->
+                    }
+                    <th></th> <!-- Empty cell for symmetry -->
+                </tr>
             </tfoot>
         </table>
     </div>
@@ -70,6 +70,7 @@
 
 <p>Selected Square: @selectedSquare</p>
 <p>Last Move: @lastMove</p>
+<p class="invalid-move-reason">@game.InvalidMoveReason</p>
 
 @code {
     private HubConnection? hubConnection;
@@ -175,4 +176,3 @@
         }
     }
 }
-

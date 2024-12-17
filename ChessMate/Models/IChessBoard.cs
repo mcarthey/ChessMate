@@ -6,5 +6,6 @@ namespace ChessMate.Models
         bool MovePiece((int Row, int Col) from, (int Row, int Col) to);
         ChessPiece[,] ChessPieces { get; set; }
         string Orientation { get; set; }
+        string InvalidMoveReason { get; set; }
     }
 }
