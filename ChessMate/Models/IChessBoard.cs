@@ -1,11 +1,13 @@
-// ChessMate/Models/IChessBoard.cs
 namespace ChessMate.Models
 {
     public interface IChessBoard
     {
-        bool MovePiece((int Row, int Col) from, (int Row, int Col) to);
-        ChessPiece[,] ChessPieces { get; set; }
-        string Orientation { get; set; }
-        string InvalidMoveReason { get; set; }
+        void InitializeBoard();
+        ChessPiece GetPieceAt((int Row, int Col) position);
+        void SetPieceAt((int Row, int Col) position, ChessPiece piece);
+        void RemovePieceAt((int Row, int Col) position);
+        (int Row, int Col) FindKing(string color);
+        IEnumerable<ChessPiece> GetAllPieces();
     }
 }
+

@@ -169,3 +169,7 @@ public class BishopTests : TestHelper
 
 
 
+
+
+
+

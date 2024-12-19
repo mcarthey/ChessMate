@@ -1,27 +1,32 @@
-﻿namespace ChessMate.Models;
+﻿using ChessMate.Services;
+
+namespace ChessMate.Models;
 
 public class Knight : ChessPiece
 {
     public Knight(string color, (int Row, int Col) position)
-        : base(color, position, color == "White" ? "♘" : "♞") { }
-
-    public override bool IsValidMove((int Row, int Col) targetPosition, ChessBoard chessBoard)
+        : base(color, position, color == "White" ? "♘" : "♞")
     {
-        if (!IsWithinBoardBounds(targetPosition))
-            return false;
+        MoveDelegate = (targetPosition, board) => ValidateKnightMove(targetPosition, board);
+        OnMoveEffect = (to) =>
+        {
+            // Knight-specific state updates can be added here if needed
+        };
+    }
 
-        int rowDiff = Math.Abs(targetPosition.Row - Position.Row);
-        int colDiff = Math.Abs(targetPosition.Col - Position.Col);
+    private bool ValidateKnightMove((int Row, int Col) targetPosition, IChessBoard board)
+    {
+        int rowDifference = Math.Abs(targetPosition.Row - Position.Row);
+        int colDifference = Math.Abs(targetPosition.Col - Position.Col);
 
-        // Moves in an L-shape
-        if ((rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2))
+        // Knight moves in an L-shape (2 squares in one direction and 1 square in the other)
+        if ((rowDifference == 2 && colDifference == 1) || (rowDifference == 1 && colDifference == 2))
         {
             // Knights can jump over other pieces, so we only need to check the target position
-            return IsTargetPositionEmpty(targetPosition, chessBoard) ||
-                IsOpponentPieceAtPosition(targetPosition, chessBoard);
+            var targetPiece = board.GetPieceAt(targetPosition);
+            return targetPiece == null || targetPiece.Color != Color;
         }
 
-        // Invalid move
         return false;
     }
 }

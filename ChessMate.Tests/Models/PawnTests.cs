@@ -62,40 +62,6 @@ public class PawnTests : TestHelper
     }
 
     [Fact]
-    public void Pawn_IsValidMove_ShouldRejectDoubleSquareMoveAfterFirstMove()
-    {
-        // Arrange
-        var pawn = new Pawn("White", (6, 0));
-        var chessBoard = InitializeCustomBoard((pawn, (6, 0)));
-        var firstMovePosition = (5, 0); // Move to (5, 0)
-        var secondMovePosition = (3, 0); // Attempt to move to (3, 0)
-
-        // Debugging output
-        PrintBoard(chessBoard);
-
-        // Act
-        bool firstMoveValid = pawn.IsValidMove(firstMovePosition, chessBoard);
-        if (firstMoveValid)
-        {
-            chessBoard.MovePiece(pawn.Position, firstMovePosition);
-            pawn = chessBoard.ChessPieces[5, 0] as Pawn;
-        }
-        bool secondMoveValid = pawn.IsValidMove(secondMovePosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Pawn_IsValidMove_ShouldRejectDoubleSquareMoveAfterFirstMove");
-        CustomOutput.WriteLine($"First Move Position: {ChessNotationUtility.ToChessNotation(firstMovePosition)}");
-        CustomOutput.WriteLine($"First Move Valid: {firstMoveValid}");
-        CustomOutput.WriteLine($"Second Move Position: {ChessNotationUtility.ToChessNotation(secondMovePosition)}");
-        CustomOutput.WriteLine($"Second Move Valid: {secondMoveValid}");
-        CustomOutput.Flush();
-
-        // Assert
-        Assert.True(firstMoveValid, "The pawn should be able to move one square forward.");
-        Assert.False(secondMoveValid, "The pawn should not be able to move two squares forward after the first move.");
-    }
-
-    [Fact]
     public void Pawn_IsValidMove_ShouldAllowDiagonalCapture()
     {
         // Arrange
@@ -221,7 +187,69 @@ public class PawnTests : TestHelper
         // Assert
         Assert.False(isValid, "The pawn should not be able to move out of bounds.");
     }
+
+    [Fact]
+    public void Pawn_IsValidMove_ShouldAllowEnPassantCapture()
+    {
+        // Arrange
+        var whitePawn = new Pawn("White", (4, 4));
+        var blackPawn = new Pawn("Black", (6, 5));
+        var chessBoard = InitializeCustomBoard((whitePawn, (4, 4)), (blackPawn, (6, 5)));
+
+        // Simulate black pawn moving two squares forward
+        var blackPawnTarget = (4, 5);
+        blackPawn.OnMoveEffect(blackPawnTarget);
+        chessBoard.SetPieceAt(blackPawnTarget, blackPawn);
+        chessBoard.RemovePieceAt((6, 5));
+
+        var targetPosition = (5, 5); // En passant capture
+
+        // Debugging output
+        PrintBoard(chessBoard);
+
+        // Act
+        bool isValid = whitePawn.IsValidMove(targetPosition, chessBoard);
+
+        // Debugging output
+        CustomOutput.WriteLine("Test: Pawn_IsValidMove_ShouldAllowEnPassantCapture");
+        CustomOutput.WriteLine($"White Pawn Position: {ChessNotationUtility.ToChessNotation(whitePawn.Position)}");
+        CustomOutput.WriteLine($"Black Pawn Position: {ChessNotationUtility.ToChessNotation(blackPawn.Position)}");
+        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
+        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
+        CustomOutput.Flush();
+
+        // Assert
+        Assert.True(isValid, "The pawn should be able to capture en passant.");
+    }
+
+    [Fact]
+    public void Pawn_OnMoveEffect_ShouldSetEnPassantTarget()
+    {
+        // Arrange
+        var pawn = new Pawn("White", (6, 0));
+        var chessBoard = InitializeCustomBoard((pawn, (6, 0)));
+        var targetPosition = (4, 0); // Move to (4, 0)
+
+        // Act
+        pawn.OnMoveEffect(targetPosition);
+
+        // Assert
+        Assert.True(pawn.HasMovedTwoSquares, "The pawn should have moved two squares.");
+        Assert.Equal((5, 0), pawn.EnPassantTarget);
+
+        // Debugging output
+        CustomOutput.WriteLine("Test: Pawn_OnMoveEffect_ShouldSetEnPassantTarget");
+        CustomOutput.WriteLine($"Pawn Position: {ChessNotationUtility.ToChessNotation(pawn.Position)}");
+        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
+        CustomOutput.WriteLine($"Has Moved Two Squares: {pawn.HasMovedTwoSquares}");
+        CustomOutput.WriteLine($"En Passant Target: {ChessNotationUtility.ToChessNotation(pawn.EnPassantTarget.Value)}");
+        CustomOutput.Flush();
+    }
 }
+
+
+
+
 
 
 

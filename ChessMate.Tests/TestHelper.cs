@@ -1,6 +1,5 @@
 using System.Text;
 using ChessMate.Models;
-using ChessMate.Services;
 using Xunit.Abstractions;
 
 namespace ChessMate.Tests;
@@ -33,12 +32,12 @@ public abstract class TestHelper
             rowBuilder.Append($"{8 - row} |");
             for (int col = 0; col < 8; col++)
             {
-                var piece = board.ChessPieces[row, col];
+                var piece = board.GetPieceAt((row, col));
                 if (piece?.Representation is null)
                 {
                     rowBuilder.Append($"{" . ",5}");
                 }
-                else 
+                else
                 {
                     rowBuilder.Append($"{piece?.Representation,4}");
                 }
@@ -53,14 +52,12 @@ public abstract class TestHelper
     protected ChessBoard InitializeCustomBoard(params (ChessPiece piece, (int Row, int Col) position)[] pieces)
     {
         var chessBoard = new ChessBoard();
-        chessBoard.ChessPieces = new ChessPiece[8, 8]; // Clear the board
-
-        foreach (var (piece, position) in pieces)
-        {
-            chessBoard.ChessPieces[position.Row, position.Col] = piece;
-            piece.Position = position;
-        }
-
+        chessBoard.SetCustomBoard(pieces);
         return chessBoard;
     }
 }
+
+
+
+
+

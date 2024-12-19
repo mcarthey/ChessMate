@@ -1,26 +1,32 @@
-﻿namespace ChessMate.Models;
+﻿using ChessMate.Services;
+
+namespace ChessMate.Models;
 
 public class King : ChessPiece
 {
     public King(string color, (int Row, int Col) position)
-        : base(color, position, color == "White" ? "♔" : "♚") { }
-
-    public override bool IsValidMove((int Row, int Col) targetPosition, ChessBoard chessBoard)
+        : base(color, position, color == "White" ? "♔" : "♚")
     {
-        if (!IsWithinBoardBounds(targetPosition))
-            return false;
+        MoveDelegate = (targetPosition, board) => ValidateKingMove(targetPosition, board);
+        OnMoveEffect = (to) =>
+        {
+            // King-specific state updates can be added here if needed
+        };
+    }
 
-        int rowDiff = Math.Abs(targetPosition.Row - Position.Row);
-        int colDiff = Math.Abs(targetPosition.Col - Position.Col);
+    private bool ValidateKingMove((int Row, int Col) targetPosition, IChessBoard board)
+    {
+        int rowDifference = Math.Abs(targetPosition.Row - Position.Row);
+        int colDifference = Math.Abs(targetPosition.Col - Position.Col);
 
         // King moves one square in any direction
-        if (rowDiff <= 1 && colDiff <= 1)
+        if (rowDifference <= 1 && colDifference <= 1)
         {
-            return IsTargetPositionEmpty(targetPosition, chessBoard) ||
-                IsOpponentPieceAtPosition(targetPosition, chessBoard);
+            // Check if the target position is empty or occupied by an opponent's piece
+            var targetPiece = board.GetPieceAt(targetPosition);
+            return targetPiece == null || targetPiece.Color != Color;
         }
 
         return false;
     }
-
 }

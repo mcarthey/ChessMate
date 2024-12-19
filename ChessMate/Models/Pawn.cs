@@ -2,50 +2,67 @@
 
 public class Pawn : ChessPiece
 {
+    public bool HasMovedTwoSquares { get; private set; }
+    public (int Row, int Col)? EnPassantTarget { get; private set; }
+
     public Pawn(string color, (int Row, int Col) position)
-        : base(color, position, color == "White" ? "♙" : "♟") { }
-
-    public override bool IsValidMove((int Row, int Col) targetPosition, ChessBoard chessBoard)
+        : base(color, position, color == "White" ? "♙" : "♟")
     {
-        // Check if target position is within board boundaries
-        if (!IsWithinBoardBounds(targetPosition))
-            return false;
+        MoveDelegate = (targetPosition, board) => ValidatePawnMove(targetPosition, board);
+        OnMoveEffect = (to) =>
+        {
+            // If the pawn moved two squares, set the flag and en passant target
+            HasMovedTwoSquares = Math.Abs(to.Row - Position.Row) == 2;
+            if (HasMovedTwoSquares)
+            {
+                EnPassantTarget = ((Position.Row + to.Row) / 2, Position.Col);
+            }
+            else
+            {
+                EnPassantTarget = null;
+            }
+        };
+    }
 
-        // Determine forward direction based on color and board orientation
-        int forwardDirection = (Color == chessBoard.Orientation) ? -1 : 1;
-
+    private bool ValidatePawnMove((int Row, int Col) targetPosition, IChessBoard board)
+    {
+        int forwardDirection = (Color == "White") ? -1 : 1;
         int rowDifference = targetPosition.Row - Position.Row;
         int colDifference = targetPosition.Col - Position.Col;
 
-        // Single square forward move
+        // Single square forward
         if (colDifference == 0 && rowDifference == forwardDirection)
-        {
-            if (IsTargetPositionEmpty(targetPosition, chessBoard))
-                return true;
-        }
+            return board.GetPieceAt(targetPosition) == null;
 
-        // Double square forward move on first move
-        int startingRow = (Color == "White")
-            ? (chessBoard.Orientation == "White" ? 6 : 1)
-            : (chessBoard.Orientation == "White" ? 1 : 6);
-
+        // Double square forward on first move
+        int startingRow = (Color == "White") ? 6 : 1;
         if (colDifference == 0 && rowDifference == 2 * forwardDirection && Position.Row == startingRow)
         {
-            if (IsPathClear(Position, targetPosition, chessBoard) &&
-                IsTargetPositionEmpty(targetPosition, chessBoard))
+            var middleSquare = (Position.Row + forwardDirection, Position.Col);
+            return board.GetPieceAt(targetPosition) == null && board.GetPieceAt(middleSquare) == null;
+        }
+
+        // Diagonal capture
+        if (Math.Abs(colDifference) == 1 && rowDifference == forwardDirection)
+        {
+            var targetPiece = board.GetPieceAt(targetPosition);
+            return targetPiece != null && targetPiece.Color != Color;
+        }
+
+        // En passant capture
+        if (Math.Abs(colDifference) == 1 && rowDifference == forwardDirection && EnPassantTarget.HasValue)
+        {
+            var enPassantPiece = board.GetPieceAt((Position.Row, targetPosition.Col));
+            if (enPassantPiece is Pawn && enPassantPiece.Color != Color && enPassantPiece.Position == EnPassantTarget.Value)
             {
+                board.RemovePieceAt(enPassantPiece.Position);
                 return true;
             }
         }
 
-        // Diagonal capture move
-        if (Math.Abs(colDifference) == 1 && rowDifference == forwardDirection)
-        {
-            if (IsOpponentPieceAtPosition(targetPosition, chessBoard))
-                return true;
-        }
-
-        // Move is invalid
-        return false;
+        return false; // Invalid move
     }
 }
+
+
+

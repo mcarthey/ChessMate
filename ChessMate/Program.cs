@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ChessMate.Data;
-using Microsoft.AspNetCore.SignalR;
 using ChessMate.Hubs;
 using ChessMate.Models;
 using ChessMate.Services;
@@ -15,7 +14,9 @@ builder.Services.AddServerSideBlazor();
 // Register services for DI
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<IChessBoard, ChessBoard>();
-builder.Services.AddScoped<ChessGame>();
+builder.Services.AddScoped<IStateService, StateService>();
+builder.Services.AddScoped<IMoveService, MoveService>();
+builder.Services.AddScoped<IGameEngine, GameEngine>();
 
 var app = builder.Build();
 

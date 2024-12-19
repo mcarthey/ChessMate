@@ -2,9 +2,7 @@
 @using ChessMate.Models
 @using ChessMate.Services
 @using ChessMate.Utilities
-@using Microsoft.AspNetCore.SignalR.Client
-@inject NavigationManager NavigationManager
-@inject ChessGame game
+@inject IGameEngine GameEngine
 
 <h3>Chess Game</h3>
 
@@ -12,167 +10,101 @@
     <div class="chess-board">
         <table class="chessboard">
             <thead>
-                <!-- Add column headers -->
                 <tr>
-                    <th></th> <!-- Empty corner cell -->
+                    <th></th>
                     @for (char col = 'a'; col <= 'h'; col++)
                     {
-                        <th>@col</th> <!-- Column labels (a, b, c, ...) -->
+                        <th>@col</th>
                     }
-                    <th></th> <!-- Empty cell for symmetry -->
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 @for (int row = 0; row < 8; row++)
                 {
-                    int currentRow = row; // capture row locally
                     <tr>
-                        <th>@(8 - currentRow)</th> <!-- Row label (8, 7, 6, ...) -->
+                        <th>@(8 - row)</th>
                         @for (int col = 0; col < 8; col++)
                         {
-                            int currentCol = col; // capture col locally
-                            <td @onclick="() => SelectSquare(currentRow, currentCol)" class="@GetSquareClass(currentRow, currentCol)">
-                                @(game.Board.ChessPieces[currentRow, currentCol]?.Representation ?? "")
+                            var position = (row, col);
+                            var piece = GameEngine.Board.GetPieceAt(position);
+                            <td @onclick="() => SelectSquare(position)"
+                                class="@GetSquareClass(position)">
+                                @(piece?.Representation ?? "")
                             </td>
                         }
-                        <th>@(8 - currentRow)</th> <!-- Row label on the other side -->
+                        <th>@(8 - row)</th>
                     </tr>
                 }
             </tbody>
             <tfoot>
-                <!-- Add column headers at the bottom -->
                 <tr>
-                    <th></th> <!-- Empty corner cell -->
+                    <th></th>
                     @for (char col = 'a'; col <= 'h'; col++)
                     {
-                        <th>@col</th> <!-- Column labels (a, b, c, ...) -->
+                        <th>@col</th>
                     }
-                    <th></th> <!-- Empty cell for symmetry -->
+                    <th></th>
                 </tr>
             </tfoot>
         </table>
     </div>
+    <div class="game-info">
+        <h3>Game Info</h3>
+        <p>Current Player: @GameEngine.GetCurrentPlayer()</p>
+        <p>Check: @(GameEngine.State.IsCheck ? "Yes" : "No")</p>
+        <p>Checkmate: @(GameEngine.State.IsCheckmate ? "Yes" : "No")</p>
+    </div>
     <div class="move-log">
         <h3>Move Log</h3>
         <ul>
-            @foreach (var move in game.MoveLog)
+            @foreach (var move in GameEngine.State.MoveLog)
             {
                 <li>@move</li>
             }
         </ul>
     </div>
-    <div class="ai-feedback">
-        <h3>AI Feedback</h3>
-        <p>@aiFeedback</p>
-        <button @onclick="GetFeedback">Analyze Game</button>
-    </div>
 </div>
 
-<p>Selected Square: @selectedSquare</p>
-<p>Last Move: @lastMove</p>
-<p class="invalid-move-reason">@game.InvalidMoveReason</p>
+<p class="error-message">@errorMessage</p>
 
 @code {
-    private HubConnection? hubConnection;
-    private string? selectedSquare;
-    private string? lastMove;
-    private string aiFeedback = "No feedback yet.";
+    private string? errorMessage;
+    private (int Row, int Col)? selectedPosition;
 
-    // We'll store the currently selected position as a tuple.
-    private (int row, int col)? selectedPosition;
-    private List<(int row, int col)> possibleMoves = new List<(int row, int col)>();
-
-    protected override async Task OnInitializedAsync()
+    private void SelectSquare((int Row, int Col) position)
     {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/chesshub"))
-            .Build();
-
-        hubConnection.On<string, string>("ReceiveMove", async (start, end) =>
-        {
-            lastMove = $"{start} -> {end}";
-            await InvokeAsync(StateHasChanged);
-        });
-
-        await hubConnection.StartAsync();
-    }
-
-    private async Task GetFeedback()
-    {
-        aiFeedback = await game.GetGameAnalysisAsync();
-    }
-
-    private async Task SelectSquare(int row, int col)
-    {
-        string notation = ChessNotationUtility.ToChessNotation((row, col));
-
         if (selectedPosition == null)
         {
-            var piece = game.Board.ChessPieces[row, col];
-            if (piece != null)
-            {
-                selectedPosition = (row, col);
-                selectedSquare = notation;
-                possibleMoves = GetPossibleMoves(piece, row, col);
-            }
+            selectedPosition = position;
         }
         else
         {
-            var (startRow, startCol) = selectedPosition.Value;
-            string fromNotation = ChessNotationUtility.ToChessNotation((startRow, startCol));
-            bool moveSuccess = game.MovePiece(fromNotation, notation);
+            var from = ChessNotationUtility.ToChessNotation(selectedPosition.Value);
+            var to = ChessNotationUtility.ToChessNotation(position);
 
-            if (moveSuccess)
+            bool success = GameEngine.ProcessMove(from, to);
+            if (!success)
             {
-                lastMove = $"{fromNotation} -> {notation}";
+                errorMessage = "Invalid move. Please try again.";
             }
-
+            else
+            {
+                errorMessage = null;
+            }
             selectedPosition = null;
-            selectedSquare = null;
-            possibleMoves.Clear();
         }
-
-        await InvokeAsync(StateHasChanged);
     }
 
-    private List<(int row, int col)> GetPossibleMoves(ChessPiece piece, int row, int col)
+    private string GetSquareClass((int Row, int Col) position)
     {
-        var moves = new List<(int row, int col)>();
-
-        for (int r = 0; r < 8; r++)
+        var baseClass = (position.Row + position.Col) % 2 == 0 ? "light" : "dark";
+        if (selectedPosition == position)
         {
-            for (int c = 0; c < 8; c++)
-            {
-                if (piece.IsValidMove((r, c), game.Board as Models.ChessBoard))
-                {
-                    moves.Add((r, c));
-                }
-            }
-        }
-
-        return moves;
-    }
-
-    private string GetSquareClass(int row, int col)
-    {
-        var baseClass = (row + col) % 2 == 0 ? "light" : "dark";
-        if (possibleMoves.Contains((row, col)))
-        {
-            var piece = game.Board.ChessPieces[row, col];
-            if (piece != null && piece.Color != game.Board.ChessPieces[selectedPosition.Value.row, selectedPosition.Value.col].Color)
-            {
-                return $"{baseClass} highlight-capture";
-            }
-            return $"{baseClass} highlight";
+            return $"{baseClass} selected";
         }
         return baseClass;
     }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
-    }
 }
+
+
