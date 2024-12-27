@@ -6,7 +6,9 @@ namespace ChessMate.Services
     {
         IChessBoard Board { get; }
         IStateService State { get; }
+
         bool ProcessMove(string fromNotation, string toNotation);
+
         string GetCurrentPlayer();
     }
 }

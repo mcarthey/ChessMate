@@ -1,16 +1,25 @@
 using System.Text;
 using ChessMate.Models;
+using ChessMate.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit.Abstractions;
 
 namespace ChessMate.Tests;
 
-public abstract class TestHelper
+public abstract class TestHelper : TestFixture
 {
+    protected readonly IStateService StateService;
+    public IMoveService MoveService { get; set; }
+    public IChessBoard ChessBoard { get; set; }
     protected CustomTestOutputHelper CustomOutput { get; set; }
 
-    protected TestHelper(ITestOutputHelper output)
+    protected TestHelper(ITestOutputHelper output) : base()
     {
         CustomOutput = new CustomTestOutputHelper(output);
+        StateService = ServiceProvider.GetRequiredService<IStateService>();
+        MoveService = ServiceProvider.GetRequiredService<IMoveService>();
+        ChessBoard = ServiceProvider.GetRequiredService<IChessBoard>();
     }
 
     protected void PrintBoard(IChessBoard board)
@@ -47,6 +56,7 @@ public abstract class TestHelper
         }
         CustomOutput.WriteLine(separator);
         CustomOutput.WriteLine(columnHeaders.ToString());
+        CustomOutput.Flush(); // Ensure output is flushed
     }
 
     protected ChessBoard InitializeCustomBoard(params (ChessPiece piece, (int Row, int Col) position)[] pieces)
@@ -55,9 +65,17 @@ public abstract class TestHelper
         chessBoard.SetCustomBoard(pieces);
         return chessBoard;
     }
+
+    // Helper method to get a mocked IGameContext
+    protected IGameContext GetMockedGameContext(IChessBoard board, string currentPlayer)
+    {
+        var mockStateService = new Mock<IStateService>();
+        mockStateService.Setup(s => s.CurrentPlayer).Returns(currentPlayer);
+
+        var mockGameContext = new Mock<IGameContext>();
+        mockGameContext.Setup(c => c.Board).Returns(board);
+        mockGameContext.Setup(c => c.State).Returns(mockStateService.Object);
+
+        return mockGameContext.Object;
+    }
 }
-
-
-
-
-

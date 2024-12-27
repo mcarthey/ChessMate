@@ -17,6 +17,7 @@ builder.Services.AddScoped<IChessBoard, ChessBoard>();
 builder.Services.AddScoped<IStateService, StateService>();
 builder.Services.AddScoped<IMoveService, MoveService>();
 builder.Services.AddScoped<IGameEngine, GameEngine>();
+builder.Services.AddScoped<IGameContext, GameContext>();
 
 var app = builder.Build();
 

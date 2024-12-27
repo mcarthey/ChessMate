@@ -1,5 +1,8 @@
+// File: ChessMate.Tests/Models/BishopTests.cs
+
 using ChessMate.Models;
-using ChessMate.Utilities;
+using ChessMate.Services;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,20 +20,11 @@ public class BishopTests : TestHelper
         // Arrange
         var bishop = new Bishop("White", (7, 2));
         var chessBoard = InitializeCustomBoard((bishop, (7, 2)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
         var targetPosition = (5, 4); // Move to (5, 4)
 
-        // Debugging output
-        PrintBoard(chessBoard);
-
         // Act
-        bool isValid = bishop.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Bishop_IsValidMove_ShouldAllowDiagonalMove");
-        CustomOutput.WriteLine($"Bishop Position: {ChessNotationUtility.ToChessNotation(bishop.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = bishop.IsValidMove(targetPosition, gameContext);
 
         // Assert
         Assert.True(isValid, "The bishop should be able to move diagonally.");
@@ -42,20 +36,11 @@ public class BishopTests : TestHelper
         // Arrange
         var bishop = new Bishop("White", (7, 2));
         var chessBoard = InitializeCustomBoard((bishop, (7, 2)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
         var targetPosition = (6, 2); // Move to (6, 2)
 
-        // Debugging output
-        PrintBoard(chessBoard);
-
         // Act
-        bool isValid = bishop.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Bishop_IsValidMove_ShouldRejectNonDiagonalMove");
-        CustomOutput.WriteLine($"Bishop Position: {ChessNotationUtility.ToChessNotation(bishop.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = bishop.IsValidMove(targetPosition, gameContext);
 
         // Assert
         Assert.False(isValid, "The bishop should not be able to move non-diagonally.");
@@ -68,20 +53,11 @@ public class BishopTests : TestHelper
         var bishop = new Bishop("White", (7, 2));
         var blackPawn = new Pawn("Black", (5, 4));
         var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (blackPawn, (5, 4)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
         var targetPosition = (5, 4); // Move to (5, 4)
 
-        // Debugging output
-        PrintBoard(chessBoard);
-
         // Act
-        bool isValid = bishop.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Bishop_IsValidMove_ShouldAllowCapture");
-        CustomOutput.WriteLine($"Bishop Position: {ChessNotationUtility.ToChessNotation(bishop.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = bishop.IsValidMove(targetPosition, gameContext);
 
         // Assert
         Assert.True(isValid, "The bishop should be able to capture an opponent's piece.");
@@ -94,20 +70,11 @@ public class BishopTests : TestHelper
         var bishop = new Bishop("White", (7, 2));
         var whitePawn = new Pawn("White", (5, 4));
         var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (whitePawn, (5, 4)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
         var targetPosition = (5, 4); // Move to (5, 4)
 
-        // Debugging output
-        PrintBoard(chessBoard);
-
         // Act
-        bool isValid = bishop.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Bishop_IsValidMove_ShouldRejectMoveToOccupiedSquare");
-        CustomOutput.WriteLine($"Bishop Position: {ChessNotationUtility.ToChessNotation(bishop.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = bishop.IsValidMove(targetPosition, gameContext);
 
         // Assert
         Assert.False(isValid, "The bishop should not be able to move to a square occupied by a piece of the same color.");
@@ -119,23 +86,11 @@ public class BishopTests : TestHelper
         // Arrange
         var bishop = new Bishop("White", (7, 2));
         var chessBoard = InitializeCustomBoard((bishop, (7, 2)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
         var targetPosition = (8, 3); // Move to (8, 3) - out of bounds
 
-        // Debugging output
-        PrintBoard(chessBoard);
-
-        // Act
-        bool isValid = bishop.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Bishop_IsValidMove_ShouldRejectMoveOutOfBounds");
-        CustomOutput.WriteLine($"Bishop Position: {ChessNotationUtility.ToChessNotation(bishop.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
-
-        // Assert
-        Assert.False(isValid, "The bishop should not be able to move out of bounds.");
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => bishop.IsValidMove(targetPosition, gameContext));
     }
 
     [Fact]
@@ -143,33 +98,33 @@ public class BishopTests : TestHelper
     {
         // Arrange
         var bishop = new Bishop("White", (7, 2));
-        var whitePawn = new Pawn("White", (6, 3));
-        var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (whitePawn, (6, 3)));
+        var blockingPawn = new Pawn("White", (6, 3));
+        var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (blockingPawn, (6, 3)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
         var targetPosition = (5, 4); // Move to (5, 4)
 
-        // Debugging output
-        PrintBoard(chessBoard);
-
         // Act
-        bool isValid = bishop.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Bishop_IsValidMove_ShouldRejectMoveIfPathIsNotClear");
-        CustomOutput.WriteLine($"Bishop Position: {ChessNotationUtility.ToChessNotation(bishop.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = bishop.IsValidMove(targetPosition, gameContext);
 
         // Assert
         Assert.False(isValid, "The bishop should not be able to move if the path is not clear.");
     }
+
+    [Fact]
+    public void Bishop_IsValidMove_ShouldRejectMoveThroughOpponentPiece()
+    {
+        // Arrange
+        var bishop = new Bishop("White", (7, 2));
+        var blackKnight = new Knight("Black", (6, 3));
+        var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (blackKnight, (6, 3)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (5, 4); // Move to (5, 4)
+
+        // Act
+        bool isValid = bishop.IsValidMove(targetPosition, gameContext);
+
+        // Assert
+        Assert.False(isValid, "The bishop should not be able to move through an opponent's piece.");
+    }
+
 }
-
-
-
-
-
-
-
-
-

@@ -1,5 +1,7 @@
+// File: ChessMate.Tests/Models/RookTests.cs
+
 using ChessMate.Models;
-using ChessMate.Utilities;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,23 +19,30 @@ public class RookTests : TestHelper
         // Arrange
         var rook = new Rook("White", (7, 0));
         var chessBoard = InitializeCustomBoard((rook, (7, 0)));
-        var targetPosition = (7, 5); // Move to (7, 5)
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (7, 5); // Move horizontally
 
         // Act
-        bool isValid = rook.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Rook_IsValidMove_ShouldAllowStraightMove");
-        CustomOutput.WriteLine($"Rook Position: {ChessNotationUtility.ToChessNotation(rook.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = rook.IsValidMove(targetPosition, gameContext);
 
         // Assert
-        Assert.True(isValid, "The rook should be able to move straight.");
+        Assert.True(isValid, "The rook should be able to move horizontally.");
+    }
+
+    [Fact]
+    public void Rook_IsValidMove_ShouldAllowVerticalMove()
+    {
+        // Arrange
+        var rook = new Rook("White", (7, 0));
+        var chessBoard = InitializeCustomBoard((rook, (7, 0)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (3, 0); // Move vertically
+
+        // Act
+        bool isValid = rook.IsValidMove(targetPosition, gameContext);
+
+        // Assert
+        Assert.True(isValid, "The rook should be able to move vertically.");
     }
 
     [Fact]
@@ -42,20 +51,11 @@ public class RookTests : TestHelper
         // Arrange
         var rook = new Rook("White", (7, 0));
         var chessBoard = InitializeCustomBoard((rook, (7, 0)));
-        var targetPosition = (5, 2); // Move to (5, 2)
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (5, 2); // Diagonal move
 
         // Act
-        bool isValid = rook.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Rook_IsValidMove_ShouldRejectDiagonalMove");
-        CustomOutput.WriteLine($"Rook Position: {ChessNotationUtility.ToChessNotation(rook.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = rook.IsValidMove(targetPosition, gameContext);
 
         // Assert
         Assert.False(isValid, "The rook should not be able to move diagonally.");
@@ -66,113 +66,71 @@ public class RookTests : TestHelper
     {
         // Arrange
         var rook = new Rook("White", (7, 0));
-        var blackPawn = new Pawn("Black", (7, 5));
-        var chessBoard = InitializeCustomBoard((rook, (7, 0)), (blackPawn, (7, 5)));
-        var targetPosition = (7, 5); // Move to (7, 5)
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        var opponentPawn = new Pawn("Black", (7, 5));
+        var chessBoard = InitializeCustomBoard(
+            (rook, (7, 0)),
+            (opponentPawn, (7, 5))
+        );
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (7, 5); // Capture opponent's piece
 
         // Act
-        bool isValid = rook.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Rook_IsValidMove_ShouldAllowCapture");
-        CustomOutput.WriteLine($"Rook Position: {ChessNotationUtility.ToChessNotation(rook.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = rook.IsValidMove(targetPosition, gameContext);
 
         // Assert
         Assert.True(isValid, "The rook should be able to capture an opponent's piece.");
     }
 
     [Fact]
-    public void Rook_IsValidMove_ShouldRejectMoveToOccupiedSquare()
+    public void Rook_IsValidMove_ShouldRejectMoveToOccupiedSquareByOwnPiece()
     {
         // Arrange
         var rook = new Rook("White", (7, 0));
-        var whitePawn = new Pawn("White", (7, 5));
-        var chessBoard = InitializeCustomBoard((rook, (7, 0)), (whitePawn, (7, 5)));
-        var targetPosition = (7, 5); // Move to (7, 5)
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        var ownPawn = new Pawn("White", (7, 5));
+        var chessBoard = InitializeCustomBoard(
+            (rook, (7, 0)),
+            (ownPawn, (7, 5))
+        );
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (7, 5); // Square occupied by own piece
 
         // Act
-        bool isValid = rook.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Rook_IsValidMove_ShouldRejectMoveToOccupiedSquare");
-        CustomOutput.WriteLine($"Rook Position: {ChessNotationUtility.ToChessNotation(rook.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = rook.IsValidMove(targetPosition, gameContext);
 
         // Assert
-        Assert.False(isValid, "The rook should not be able to move to a square occupied by a piece of the same color.");
+        Assert.False(isValid, "The rook should not be able to move to a square occupied by its own piece.");
     }
 
     [Fact]
-    public void Rook_IsValidMove_ShouldRejectMoveOutOfBounds()
+    public void Rook_IsValidMove_ShouldRejectMoveIfPathIsBlocked()
     {
         // Arrange
         var rook = new Rook("White", (7, 0));
-        var chessBoard = InitializeCustomBoard((rook, (7, 0)));
-        var targetPosition = (8, 0); // Move to (8, 0) - out of bounds
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        var blockingPiece = new Pawn("White", (7, 3));
+        var chessBoard = InitializeCustomBoard(
+            (rook, (7, 0)),
+            (blockingPiece, (7, 3))
+        );
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (7, 5); // Path is blocked
 
         // Act
-        bool isValid = rook.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Rook_IsValidMove_ShouldRejectMoveOutOfBounds");
-        CustomOutput.WriteLine($"Rook Position: {ChessNotationUtility.ToChessNotation(rook.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = rook.IsValidMove(targetPosition, gameContext);
 
         // Assert
-        Assert.False(isValid, "The rook should not be able to move out of bounds.");
+        Assert.False(isValid, "The rook should not be able to move if the path is blocked.");
     }
 
     [Fact]
-    public void Rook_IsValidMove_ShouldRejectMoveIfPathIsNotClear()
+    public void Rook_IsValidMove_ShouldRejectOutOfBoundsMove()
     {
         // Arrange
-        var rook = new Rook("White", (7, 0));
-        var whitePawn = new Pawn("White", (7, 3));
-        var chessBoard = InitializeCustomBoard((rook, (7, 0)), (whitePawn, (7, 3)));
-        var targetPosition = (7, 5); // Move to (7, 5)
+        var rook = new Rook("White", (0, 0));
+        var chessBoard = InitializeCustomBoard((rook, (0, 0)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (-1, 0); // Out of bounds
 
-        // Debugging output
-        PrintBoard(chessBoard);
-
-        // Act
-        bool isValid = rook.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: Rook_IsValidMove_ShouldRejectMoveIfPathIsNotClear");
-        CustomOutput.WriteLine($"Rook Position: {ChessNotationUtility.ToChessNotation(rook.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
-
-        // Assert
-        Assert.False(isValid, "The rook should not be able to move if the path is not clear.");
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => rook.IsValidMove(targetPosition, gameContext));
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

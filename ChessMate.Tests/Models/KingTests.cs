@@ -1,5 +1,6 @@
+// File: ChessMate.Tests/Models/KingTests.cs
+
 using ChessMate.Models;
-using ChessMate.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,163 +13,123 @@ public class KingTests : TestHelper
     }
 
     [Fact]
-    public void King_IsValidMove_ShouldAllowSingleSquareMove()
+    public void King_IsValidMove_ShouldAllowOneSquareMoveInAnyDirection()
     {
         // Arrange
-        var king = new King("White", (7, 4));
-        var chessBoard = InitializeCustomBoard((king, (7, 4)));
-        var targetPosition = (6, 4); // Move to (6, 4)
+        var king = new King("White", (4, 4));
+        var chessBoard = InitializeCustomBoard((king, (4, 4)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
 
-        // Debugging output
-        PrintBoard(chessBoard);
+        var validMoves = new List<(int Row, int Col)>
+        {
+            (3, 4), // Up
+            (5, 4), // Down
+            (4, 3), // Left
+            (4, 5), // Right
+            (3, 3), // Up-Left
+            (3, 5), // Up-Right
+            (5, 3), // Down-Left
+            (5, 5), // Down-Right
+        };
 
-        // Act
-        bool isValid = king.IsValidMove(targetPosition, chessBoard);
+        foreach (var targetPosition in validMoves)
+        {
+            // Act
+            bool isValid = king.IsValidMove(targetPosition, gameContext);
 
-        // Debugging output
-        CustomOutput.WriteLine("Test: King_IsValidMove_ShouldAllowSingleSquareMove");
-        CustomOutput.WriteLine($"King Position: {ChessNotationUtility.ToChessNotation(king.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
-
-        // Assert
-        Assert.True(isValid, "The king should be able to move one square forward.");
+            // Assert
+            Assert.True(isValid, $"The king should be able to move to {targetPosition}.");
+        }
     }
 
     [Fact]
-    public void King_IsValidMove_ShouldAllowDiagonalMove()
+    public void King_IsValidMove_ShouldRejectMoveMoreThanOneSquare()
     {
         // Arrange
-        var king = new King("White", (7, 4));
-        var chessBoard = InitializeCustomBoard((king, (7, 4)));
-        var targetPosition = (6, 5); // Move to (6, 5)
+        var king = new King("White", (4, 4));
+        var chessBoard = InitializeCustomBoard((king, (4, 4)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
 
-        // Debugging output
-        PrintBoard(chessBoard);
+        var invalidMoves = new List<(int Row, int Col)>
+        {
+            (2, 4), // Two squares up
+            (6, 4), // Two squares down
+            (4, 2), // Two squares left
+            (4, 6), // Two squares right
+            (2, 2), // Two squares up-left
+            (6, 6), // Two squares down-right
+        };
 
-        // Act
-        bool isValid = king.IsValidMove(targetPosition, chessBoard);
+        foreach (var targetPosition in invalidMoves)
+        {
+            // Act
+            bool isValid = king.IsValidMove(targetPosition, gameContext);
 
-        // Debugging output
-        CustomOutput.WriteLine("Test: King_IsValidMove_ShouldAllowDiagonalMove");
-        CustomOutput.WriteLine($"King Position: {ChessNotationUtility.ToChessNotation(king.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
-
-        // Assert
-        Assert.True(isValid, "The king should be able to move one square diagonally.");
+            // Assert
+            Assert.False(isValid, $"The king should not be able to move to {targetPosition}.");
+        }
     }
 
     [Fact]
-    public void King_IsValidMove_ShouldRejectInvalidMove()
+    public void King_IsValidMove_ShouldAllowCaptureOfOpponentPiece()
     {
         // Arrange
-        var king = new King("White", (7, 4));
-        var chessBoard = InitializeCustomBoard((king, (7, 4)));
-        var targetPosition = (5, 4); // Move to (5, 4)
-
-        // Debugging output
-        PrintBoard(chessBoard);
-
-        // Act
-        bool isValid = king.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: King_IsValidMove_ShouldRejectInvalidMove");
-        CustomOutput.WriteLine($"King Position: {ChessNotationUtility.ToChessNotation(king.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
-
-        // Assert
-        Assert.False(isValid, "The king should not be able to move two squares forward.");
-    }
-
-    [Fact]
-    public void King_IsValidMove_ShouldAllowCapture()
-    {
-        // Arrange
-        var king = new King("White", (7, 4));
-        var blackPawn = new Pawn("Black", (6, 4));
-        var chessBoard = InitializeCustomBoard((king, (7, 4)), (blackPawn, (6, 4)));
-        var targetPosition = (6, 4); // Move to (6, 4)
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        var king = new King("White", (4, 4));
+        var opponentPawn = new Pawn("Black", (3, 4));
+        var chessBoard = InitializeCustomBoard((king, (4, 4)), (opponentPawn, (3, 4)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (3, 4); // Opponent's piece
 
         // Act
-        bool isValid = king.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: King_IsValidMove_ShouldAllowCapture");
-        CustomOutput.WriteLine($"King Position: {ChessNotationUtility.ToChessNotation(king.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = king.IsValidMove(targetPosition, gameContext);
 
         // Assert
         Assert.True(isValid, "The king should be able to capture an opponent's piece.");
     }
 
     [Fact]
-    public void King_IsValidMove_ShouldRejectMoveToOccupiedSquare()
+    public void King_IsValidMove_ShouldRejectMoveToOccupiedSquareByOwnPiece()
     {
         // Arrange
-        var king = new King("White", (7, 4));
-        var whitePawn = new Pawn("White", (6, 4));
-        var chessBoard = InitializeCustomBoard((king, (7, 4)), (whitePawn, (6, 4)));
-        var targetPosition = (6, 4); // Move to (6, 4)
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        var king = new King("White", (4, 4));
+        var ownPawn = new Pawn("White", (3, 4));
+        var chessBoard = InitializeCustomBoard((king, (4, 4)), (ownPawn, (3, 4)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (3, 4); // Own piece
 
         // Act
-        bool isValid = king.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: King_IsValidMove_ShouldRejectMoveToOccupiedSquare");
-        CustomOutput.WriteLine($"King Position: {ChessNotationUtility.ToChessNotation(king.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = king.IsValidMove(targetPosition, gameContext);
 
         // Assert
-        Assert.False(isValid, "The king should not be able to move to a square occupied by a piece of the same color.");
+        Assert.False(isValid, "The king should not be able to move to a square occupied by its own piece.");
     }
 
     [Fact]
-    public void King_IsValidMove_ShouldRejectMoveOutOfBounds()
+    public void King_IsValidMove_ShouldRejectCastlingWhenNotImplemented()
     {
         // Arrange
         var king = new King("White", (7, 4));
         var chessBoard = InitializeCustomBoard((king, (7, 4)));
-        var targetPosition = (8, 4); // Move to (8, 4) - out of bounds
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (7, 6); // Attempt to castle king-side
 
         // Act
-        bool isValid = king.IsValidMove(targetPosition, chessBoard);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: King_IsValidMove_ShouldRejectMoveOutOfBounds");
-        CustomOutput.WriteLine($"King Position: {ChessNotationUtility.ToChessNotation(king.Position)}");
-        CustomOutput.WriteLine($"Target Position: {ChessNotationUtility.ToChessNotation(targetPosition)}");
-        CustomOutput.WriteLine($"Is Valid Move: {isValid}");
-        CustomOutput.Flush();
+        bool isValid = king.IsValidMove(targetPosition, gameContext);
 
         // Assert
-        Assert.False(isValid, "The king should not be able to move out of bounds.");
+        Assert.False(isValid, "The king should not be able to castle as castling is not implemented.");
+    }
+
+    [Fact]
+    public void King_IsValidMove_ShouldRejectOutOfBoundsMove()
+    {
+        // Arrange
+        var king = new King("White", (0, 0));
+        var chessBoard = InitializeCustomBoard((king, (0, 0)));
+        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var targetPosition = (-1, 0); // Out of bounds
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => king.IsValidMove(targetPosition, gameContext));
     }
 }
-
-
-
-
-
-
-
-
-

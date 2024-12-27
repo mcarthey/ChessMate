@@ -1,54 +1,44 @@
 ﻿using ChessMate.Services;
+using ChessMate.Utilities;
 
 namespace ChessMate.Models;
 
 public class Bishop : ChessPiece
 {
     public Bishop(string color, (int Row, int Col) position)
-        : base(color, position, color == "White" ? "♗" : "♝")
-    {
-        MoveDelegate = (targetPosition, board) => ValidateBishopMove(targetPosition, board);
-        OnMoveEffect = (to) =>
-        {
-            // Bishop-specific state updates can be added here if needed
-        };
-    }
+        : base(
+            color,
+            position,
+            color == "White" ? "♗" : "♝" // Unicode representation
+        )
+    { }
 
-    private bool ValidateBishopMove((int Row, int Col) targetPosition, IChessBoard board)
+    /// <summary>
+    /// Validates the bishop's movement based on the given context.
+    /// </summary>
+    public override bool IsValidMove((int Row, int Col) targetPosition, IGameContext context)
     {
+        var board = context.Board;
+
+        // 1. Validate diagonal movement
         int rowDifference = Math.Abs(targetPosition.Row - Position.Row);
         int colDifference = Math.Abs(targetPosition.Col - Position.Col);
-
-        // Bishop moves diagonally (row difference must equal column difference)
         if (rowDifference != colDifference)
-            return false;
+            return false; // Bishops move diagonally
 
-        // Check if the path is clear
-        if (!IsPathClear(Position, targetPosition, board))
-            return false;
+        // 2. Ensure the path is clear
+        if (!MoveValidationHelper.IsPathClear(Position, targetPosition, board))
+            return false; // Path must be clear
 
-        // Check if the target position is empty or occupied by an opponent's piece
+        // 3. Ensure target square is valid (empty or opponent's piece)
         var targetPiece = board.GetPieceAt(targetPosition);
         return targetPiece == null || targetPiece.Color != Color;
     }
 
-    private bool IsPathClear((int Row, int Col) from, (int Row, int Col) to, IChessBoard board)
+    // Optional: Override OnMoved if bishop has specific post-move behavior
+    public override void OnMoved((int Row, int Col) to, IGameContext context)
     {
-        int rowStep = Math.Sign(to.Row - from.Row);
-        int colStep = Math.Sign(to.Col - from.Col);
-
-        int currentRow = from.Row + rowStep;
-        int currentCol = from.Col + colStep;
-
-        while ((currentRow, currentCol) != to)
-        {
-            if (board.GetPieceAt((currentRow, currentCol)) != null)
-                return false;
-
-            currentRow += rowStep;
-            currentCol += colStep;
-        }
-
-        return true;
+        base.OnMoved(to, context);
+        // Add any bishop-specific logic here if needed
     }
 }

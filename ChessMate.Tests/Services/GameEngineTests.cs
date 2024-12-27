@@ -10,23 +10,21 @@ namespace ChessMate.Tests.Services;
 public class GameEngineTests : TestHelper
 {
     private readonly Mock<IChessBoard> _mockChessBoard;
-    private readonly Mock<IStateService> _mockStateService;
     private readonly Mock<IMoveService> _mockMoveService;
     private readonly GameEngine _gameEngine;
 
     public GameEngineTests(ITestOutputHelper output) : base(output)
     {
         _mockChessBoard = new Mock<IChessBoard>();
-        _mockStateService = new Mock<IStateService>();
         _mockMoveService = new Mock<IMoveService>();
-        _gameEngine = new GameEngine(_mockChessBoard.Object, _mockStateService.Object, _mockMoveService.Object);
+        _gameEngine = new GameEngine(_mockChessBoard.Object, StateService, _mockMoveService.Object);
     }
 
     [Fact]
     public void GameEngine_Initialize_ShouldSetUpBoardAndState()
     {
         // Arrange & Act
-        var gameEngine = new GameEngine(_mockChessBoard.Object, _mockStateService.Object, _mockMoveService.Object);
+        var gameEngine = new GameEngine(_mockChessBoard.Object, StateService, _mockMoveService.Object);
 
         // Assert
         _mockChessBoard.Verify(board => board.InitializeBoard(), Times.Once);
@@ -89,7 +87,7 @@ public class GameEngineTests : TestHelper
     public void GameEngine_GetCurrentPlayer_ShouldReturnCurrentPlayer()
     {
         // Arrange
-        _mockStateService.Setup(state => state.CurrentPlayer).Returns("White");
+        StateService.SetPlayer("White");
 
         // Act
         var currentPlayer = _gameEngine.GetCurrentPlayer();
@@ -117,7 +115,3 @@ public class GameEngineTests : TestHelper
         CustomOutput.Flush();
     }
 }
-
-
-
-
