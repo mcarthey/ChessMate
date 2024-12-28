@@ -24,13 +24,14 @@ public class GameEngineTests : TestHelper
     public void GameEngine_Initialize_ShouldSetUpBoardAndState()
     {
         // Arrange & Act
-        var gameEngine = new GameEngine(_mockChessBoard.Object, StateService, _mockMoveService.Object);
+        // Use the _gameEngine instance created in the constructor
+        // var gameEngine = new GameEngine(_mockChessBoard.Object, StateService, _mockMoveService.Object);
 
         // Assert
         _mockChessBoard.Verify(board => board.InitializeBoard(), Times.Once);
-        Assert.NotNull(gameEngine.Board);
-        Assert.NotNull(gameEngine.State);
-        Assert.NotNull(gameEngine.Move);
+        Assert.NotNull(_gameEngine.Board);
+        Assert.NotNull(_gameEngine.State);
+        Assert.NotNull(_gameEngine.Move);
 
         // Debugging output
         CustomOutput.WriteLine("Test: GameEngine_Initialize_ShouldSetUpBoardAndState");
@@ -105,7 +106,7 @@ public class GameEngineTests : TestHelper
     public void GameEngine_InitializeBoard_ShouldCallInitializeBoardOnChessBoard()
     {
         // Arrange & Act
-        _gameEngine.Board.InitializeBoard();
+        // The _gameEngine instance is created in the constructor, which calls InitializeBoard
 
         // Assert
         _mockChessBoard.Verify(board => board.InitializeBoard(), Times.Once);
@@ -114,4 +115,5 @@ public class GameEngineTests : TestHelper
         CustomOutput.WriteLine("Test: GameEngine_InitializeBoard_ShouldCallInitializeBoardOnChessBoard");
         CustomOutput.Flush();
     }
+
 }
