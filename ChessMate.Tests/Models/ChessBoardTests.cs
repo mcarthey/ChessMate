@@ -1,5 +1,6 @@
+// File: ChessMate.Tests/Models/ChessBoardTests.cs
+
 using ChessMate.Models;
-using ChessMate.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,23 +17,13 @@ public class ChessBoardTests : TestHelper
     {
         // Arrange
         var chessBoard = new ChessBoard();
-
-        // Debugging output
-        PrintBoard(chessBoard);
+        chessBoard.InitializeBoard(); // Ensure the board is initialized
 
         // Act
         var whitePawn = chessBoard.GetPieceAt((6, 0));
         var blackPawn = chessBoard.GetPieceAt((1, 0));
         var whiteRook = chessBoard.GetPieceAt((7, 0));
         var blackKing = chessBoard.GetPieceAt((0, 4));
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: ChessBoard_InitializeBoard_ShouldSetUpPiecesCorrectly");
-        CustomOutput.WriteLine($"White Pawn Position: {ChessNotationUtility.ToChessNotation((6, 0))}");
-        CustomOutput.WriteLine($"Black Pawn Position: {ChessNotationUtility.ToChessNotation((1, 0))}");
-        CustomOutput.WriteLine($"White Rook Position: {ChessNotationUtility.ToChessNotation((7, 0))}");
-        CustomOutput.WriteLine($"Black King Position: {ChessNotationUtility.ToChessNotation((0, 4))}");
-        CustomOutput.Flush();
 
         // Assert
         Assert.NotNull(whitePawn);
@@ -59,38 +50,34 @@ public class ChessBoardTests : TestHelper
         Assert.NotNull(piece);
         Assert.IsType<Pawn>(piece);
         Assert.Equal("White", piece.Color);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: ChessBoard_SetPieceAt_ShouldPlacePieceCorrectly");
-        PrintBoard(chessBoard);
-        CustomOutput.Flush();
     }
 
     [Fact]
     public void ChessBoard_RemovePieceAt_ShouldRemovePieceCorrectly()
     {
         // Arrange
-        var chessBoard = new ChessBoard();
-        var position = (6, 0);
+        var chessBoard = InitializeCustomBoard(
+            (new Pawn("White", (6, 0)), (6, 0))
+        );
 
         // Act
-        chessBoard.RemovePieceAt(position);
+        chessBoard.RemovePieceAt((6, 0));
 
         // Assert
-        var piece = chessBoard.GetPieceAt(position);
+        var piece = chessBoard.GetPieceAt((6, 0));
         Assert.Null(piece);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: ChessBoard_RemovePieceAt_ShouldRemovePieceCorrectly");
-        PrintBoard(chessBoard);
-        CustomOutput.Flush();
     }
 
     [Fact]
     public void ChessBoard_FindKing_ShouldReturnCorrectPosition()
     {
         // Arrange
-        var chessBoard = new ChessBoard();
+        var whiteKing = new King("White", (7, 4));
+        var blackKing = new King("Black", (0, 4));
+        var chessBoard = InitializeCustomBoard(
+            (whiteKing, (7, 4)),
+            (blackKing, (0, 4))
+        );
 
         // Act
         var whiteKingPosition = chessBoard.FindKing("White");
@@ -99,34 +86,28 @@ public class ChessBoardTests : TestHelper
         // Assert
         Assert.Equal((7, 4), whiteKingPosition);
         Assert.Equal((0, 4), blackKingPosition);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: ChessBoard_FindKing_ShouldReturnCorrectPosition");
-        CustomOutput.WriteLine($"White King Position: {ChessNotationUtility.ToChessNotation(whiteKingPosition)}");
-        CustomOutput.WriteLine($"Black King Position: {ChessNotationUtility.ToChessNotation(blackKingPosition)}");
-        PrintBoard(chessBoard);
-        CustomOutput.Flush();
     }
 
     [Fact]
     public void ChessBoard_GetAllPieces_ShouldReturnAllPieces()
     {
         // Arrange
-        var chessBoard = new ChessBoard();
+        var pieces = new (ChessPiece piece, (int Row, int Col) position)[]
+        {
+            (new King("White", (7, 4)), (7, 4)),
+            (new King("Black", (0, 4)), (0, 4)),
+            (new Pawn("White", (6, 0)), (6, 0)),
+            (new Pawn("Black", (1, 0)), (1, 0))
+        };
+        var chessBoard = InitializeCustomBoard(pieces);
 
         // Act
         var allPieces = chessBoard.GetAllPieces().ToList();
 
         // Assert
-        Assert.Equal(32, allPieces.Count);
+        Assert.Equal(pieces.Length, allPieces.Count);
         Assert.Contains(allPieces, p => p is King && p.Color == "White");
         Assert.Contains(allPieces, p => p is King && p.Color == "Black");
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: ChessBoard_GetAllPieces_ShouldReturnAllPieces");
-        CustomOutput.WriteLine($"Total Pieces: {allPieces.Count}");
-        PrintBoard(chessBoard);
-        CustomOutput.Flush();
     }
 
     [Fact]
@@ -159,14 +140,6 @@ public class ChessBoardTests : TestHelper
         Assert.IsType<Pawn>(customBlackPawn);
         Assert.IsType<King>(customWhiteKing);
         Assert.IsType<King>(customBlackKing);
-
-        // Debugging output
-        CustomOutput.WriteLine("Test: ChessBoard_SetCustomBoard_ShouldSetUpCustomPiecesCorrectly");
-        PrintBoard(chessBoard);
-        CustomOutput.Flush();
     }
 }
-
-
-
 

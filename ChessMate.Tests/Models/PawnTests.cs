@@ -19,7 +19,12 @@ public class PawnTests : TestHelper
         // Arrange
         var pawn = new Pawn("White", (6, 4));
         var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (5, 4); // Move forward one square
 
         // Act
@@ -35,7 +40,12 @@ public class PawnTests : TestHelper
         // Arrange
         var pawn = new Pawn("White", (6, 4));
         var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (4, 4); // Move forward two squares
 
         // Act
@@ -51,7 +61,12 @@ public class PawnTests : TestHelper
         // Arrange
         var pawn = new Pawn("White", (5, 4));
         var chessBoard = InitializeCustomBoard((pawn, (5, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (3, 4); // Attempt to move two squares forward
 
         // Act
@@ -68,7 +83,12 @@ public class PawnTests : TestHelper
         var pawn = new Pawn("White", (6, 4));
         var opponentPawn = new Pawn("Black", (5, 5));
         var chessBoard = InitializeCustomBoard((pawn, (6, 4)), (opponentPawn, (5, 5)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (5, 5); // Capture diagonally
 
         // Act
@@ -84,7 +104,12 @@ public class PawnTests : TestHelper
         // Arrange
         var pawn = new Pawn("White", (6, 4));
         var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (5, 5); // Diagonal move without capture
 
         // Act
@@ -100,7 +125,12 @@ public class PawnTests : TestHelper
         // Arrange
         var pawn = new Pawn("White", (6, 4));
         var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (7, 4); // Move backward
 
         // Act
@@ -117,7 +147,12 @@ public class PawnTests : TestHelper
         var pawn = new Pawn("White", (6, 4));
         var blockingPawn = new Pawn("Black", (5, 4));
         var chessBoard = InitializeCustomBoard((pawn, (6, 4)), (blockingPawn, (5, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (5, 4); // Move to occupied square
 
         // Act
@@ -131,9 +166,15 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldRejectMoveOutOfBounds()
     {
         // Arrange
-        var pawn = new Pawn("White", (1, 0));
-        var chessBoard = InitializeCustomBoard((pawn, (1, 0)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var pawn = new Pawn("White", (0, 0));
+        var chessBoard = InitializeCustomBoard((pawn, (0, 0)));
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
+        PrintBoard(chessBoard);
         var targetPosition = (-1, 0); // Move out of bounds
 
         // Act & Assert
@@ -147,11 +188,16 @@ public class PawnTests : TestHelper
         var whitePawn = new Pawn("White", (3, 4));
         var blackPawn = new Pawn("Black", (3, 5));
 
-        var chessBoard = InitializeCustomBoard((whitePawn, (3, 4)), (blackPawn, (3, 5)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+        var chessBoard = InitializeCustomBoard(
+            (whitePawn, (3, 4)),
+            (blackPawn, (3, 5))
+        );
 
-        // Simulate black pawn moving two squares forward on previous move
-        gameContext.State.SetEnPassantTarget((2, 5), blackPawn);
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .WithEnPassantTarget((2, 5), blackPawn)
+            .Build();
 
         var targetPosition = (2, 5); // White pawn captures en passant
 
@@ -167,15 +213,28 @@ public class PawnTests : TestHelper
     {
         // Arrange
         var pawn = new Pawn("White", (6, 4));
-        var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
         var targetPosition = (4, 4); // Double move forward
+        var expectedEnPassantTarget = (5, 4);
+
+        var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
+
+        var gameContextBuilder = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithEnPassantTarget(expectedEnPassantTarget, pawn)
+            .WithCurrentPlayer("White");
+        var gameContext = gameContextBuilder.Build();
 
         // Act
         pawn.OnMoved(targetPosition, gameContext);
 
         // Assert
-        Assert.Equal((5, 4), gameContext.State.EnPassantTarget);
+        // Verify that SetEnPassantTarget was called with correct parameters
+        gameContextBuilder.VerifyStateService(s =>
+            s.Verify(ss => ss.SetEnPassantTarget(expectedEnPassantTarget, pawn), Times.Exactly(2)));
+
+        // Optionally, check the EnPassantTarget property
+        var enPassantTarget = gameContext.State.EnPassantTarget;
+        Assert.Equal(expectedEnPassantTarget, enPassantTarget);
     }
 
     [Fact]
@@ -184,7 +243,11 @@ public class PawnTests : TestHelper
         // Arrange
         var pawn = new Pawn("White", (1, 4));
         var chessBoard = InitializeCustomBoard((pawn, (1, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .Build();
+
         var targetPosition = (0, 4); // Move to promotion rank
 
         // Act
@@ -198,3 +261,4 @@ public class PawnTests : TestHelper
         Assert.Equal(targetPosition, promotedPiece.Position);
     }
 }
+

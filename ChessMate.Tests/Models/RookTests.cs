@@ -19,7 +19,11 @@ public class RookTests : TestHelper
         // Arrange
         var rook = new Rook("White", (7, 0));
         var chessBoard = InitializeCustomBoard((rook, (7, 0)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
         var targetPosition = (7, 5); // Move horizontally
 
         // Act
@@ -35,7 +39,11 @@ public class RookTests : TestHelper
         // Arrange
         var rook = new Rook("White", (7, 0));
         var chessBoard = InitializeCustomBoard((rook, (7, 0)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
         var targetPosition = (3, 0); // Move vertically
 
         // Act
@@ -51,7 +59,11 @@ public class RookTests : TestHelper
         // Arrange
         var rook = new Rook("White", (7, 0));
         var chessBoard = InitializeCustomBoard((rook, (7, 0)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
         var targetPosition = (5, 2); // Diagonal move
 
         // Act
@@ -71,7 +83,11 @@ public class RookTests : TestHelper
             (rook, (7, 0)),
             (opponentPawn, (7, 5))
         );
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
         var targetPosition = (7, 5); // Capture opponent's piece
 
         // Act
@@ -91,7 +107,11 @@ public class RookTests : TestHelper
             (rook, (7, 0)),
             (ownPawn, (7, 5))
         );
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+        
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
         var targetPosition = (7, 5); // Square occupied by own piece
 
         // Act
@@ -111,7 +131,11 @@ public class RookTests : TestHelper
             (rook, (7, 0)),
             (blockingPiece, (7, 3))
         );
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
         var targetPosition = (7, 5); // Path is blocked
 
         // Act
@@ -127,7 +151,11 @@ public class RookTests : TestHelper
         // Arrange
         var rook = new Rook("White", (0, 0));
         var chessBoard = InitializeCustomBoard((rook, (0, 0)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build(); 
         var targetPosition = (-1, 0); // Out of bounds
 
         // Act & Assert

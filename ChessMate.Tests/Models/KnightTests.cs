@@ -1,8 +1,6 @@
 // File: ChessMate.Tests/Models/KnightTests.cs
 
 using ChessMate.Models;
-using Moq;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,7 +18,11 @@ public class KnightTests : TestHelper
         // Arrange
         var knight = new Knight("White", (4, 4));
         var chessBoard = InitializeCustomBoard((knight, (4, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
 
         var validMoves = new List<(int Row, int Col)>
         {
@@ -50,7 +52,11 @@ public class KnightTests : TestHelper
         // Arrange
         var knight = new Knight("White", (4, 4));
         var chessBoard = InitializeCustomBoard((knight, (4, 4)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
 
         var invalidMoves = new List<(int Row, int Col)>
         {
@@ -77,7 +83,12 @@ public class KnightTests : TestHelper
         var knight = new Knight("White", (4, 4));
         var opponentPawn = new Pawn("Black", (2, 3));
         var chessBoard = InitializeCustomBoard((knight, (4, 4)), (opponentPawn, (2, 3)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (2, 3); // Opponent's piece
 
         // Act
@@ -94,7 +105,12 @@ public class KnightTests : TestHelper
         var knight = new Knight("White", (4, 4));
         var ownPawn = new Pawn("White", (2, 3));
         var chessBoard = InitializeCustomBoard((knight, (4, 4)), (ownPawn, (2, 3)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (2, 3); // Own piece
 
         // Act
@@ -117,7 +133,12 @@ public class KnightTests : TestHelper
             (blockingPiece1, (6, 1)),
             (blockingPiece2, (6, 2))
         );
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (5, 2); // Valid L-shaped move
 
         // Act
@@ -127,14 +148,18 @@ public class KnightTests : TestHelper
         Assert.True(isValid, "The knight should be able to move regardless of pieces in the way.");
     }
 
-
     [Fact]
     public void Knight_IsValidMove_ShouldRejectOutOfBoundsMove()
     {
         // Arrange
         var knight = new Knight("White", (0, 0));
         var chessBoard = InitializeCustomBoard((knight, (0, 0)));
-        var gameContext = GetMockedGameContext(chessBoard, "White");
+
+        var gameContext = new GameContextBuilder()
+            .WithBoard(chessBoard)
+            .WithCurrentPlayer("White")
+            .Build();
+
         var targetPosition = (-2, -1); // Out of bounds
 
         // Act & Assert

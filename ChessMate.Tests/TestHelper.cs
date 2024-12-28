@@ -65,17 +65,4 @@ public abstract class TestHelper : TestFixture
         chessBoard.SetCustomBoard(pieces);
         return chessBoard;
     }
-
-    // Helper method to get a mocked IGameContext
-    protected IGameContext GetMockedGameContext(IChessBoard board, string currentPlayer)
-    {
-        var mockStateService = new Mock<IStateService>();
-        mockStateService.Setup(s => s.CurrentPlayer).Returns(currentPlayer);
-
-        var mockGameContext = new Mock<IGameContext>();
-        mockGameContext.Setup(c => c.Board).Returns(board);
-        mockGameContext.Setup(c => c.State).Returns(mockStateService.Object);
-
-        return mockGameContext.Object;
     }
-}
