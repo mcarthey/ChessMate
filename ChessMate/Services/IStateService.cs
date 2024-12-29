@@ -16,14 +16,16 @@ namespace ChessMate.Services
         bool BlackRookKingSideMoved { get; set; }
         bool BlackRookQueenSideMoved { get; set; }
 
-        (int Row, int Col)? EnPassantTarget { get; }
+        Position? EnPassantTarget { get; }
 
         void SwitchPlayer();
         void SetPlayer(string player);
 
-        void SetEnPassantTarget((int Row, int Col) target, ChessPiece piece);
+        void SetEnPassantTarget(Position target, ChessPiece piece);
         void ResetEnPassantTarget();
 
         void ResetState();
+
+        void UpdateGameStateAfterMove(ChessPiece piece, Position from, Position to, IGameContext context, IGameStateEvaluator gameStateEvaluator);
     }
 }

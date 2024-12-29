@@ -5,7 +5,7 @@ namespace ChessMate.Models;
 
 public class Rook : ChessPiece
 {
-    public Rook(string color, (int Row, int Col) position)
+    public Rook(string color, Position position)
         : base(
             color,
             position,
@@ -16,7 +16,7 @@ public class Rook : ChessPiece
     /// <summary>
     /// Validates the rook's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove((int Row, int Col) targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IGameContext context)
     {
         var board = context.Board;
 
@@ -37,7 +37,7 @@ public class Rook : ChessPiece
     }
 
     // Optional: Override OnMoved if rook has specific post-move behavior
-    public override void OnMoved((int Row, int Col) to, IGameContext context)
+    public override void OnMoved(Position to, IGameContext context)
     {
         base.OnMoved(to, context);
         // Add any rook-specific logic here if needed (e.g., updating castling rights)

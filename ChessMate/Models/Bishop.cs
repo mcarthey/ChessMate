@@ -5,7 +5,7 @@ namespace ChessMate.Models;
 
 public class Bishop : ChessPiece
 {
-    public Bishop(string color, (int Row, int Col) position)
+    public Bishop(string color, Position position)
         : base(
             color,
             position,
@@ -16,7 +16,7 @@ public class Bishop : ChessPiece
     /// <summary>
     /// Validates the bishop's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove((int Row, int Col) targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IGameContext context)
     {
         var board = context.Board;
 
@@ -36,7 +36,7 @@ public class Bishop : ChessPiece
     }
 
     // Optional: Override OnMoved if bishop has specific post-move behavior
-    public override void OnMoved((int Row, int Col) to, IGameContext context)
+    public override void OnMoved(Position to, IGameContext context)
     {
         base.OnMoved(to, context);
         // Add any bishop-specific logic here if needed

@@ -1,3 +1,5 @@
+// File: ChessMate.Tests/Models/QueenTests.cs
+
 using ChessMate.Models;
 using Moq;
 using Xunit;
@@ -15,15 +17,15 @@ public class QueenTests : TestHelper
     public void Queen_IsValidMove_ShouldAllowVerticalMove()
     {
         // Arrange
-        var queen = new Queen("White", (4, 4));
-        var chessBoard = InitializeCustomBoard((queen, (4, 4)));
+        var queen = new Queen("White", new Position("e4"));
+        var chessBoard = InitializeCustomBoard((queen, new Position("e4")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (1, 4); // Move vertically
+        var targetPosition = new Position("e1"); // Move vertically
 
         // Act
         bool isValid = queen.IsValidMove(targetPosition, gameContext);
@@ -36,15 +38,15 @@ public class QueenTests : TestHelper
     public void Queen_IsValidMove_ShouldAllowHorizontalMove()
     {
         // Arrange
-        var queen = new Queen("White", (4, 4));
-        var chessBoard = InitializeCustomBoard((queen, (4, 4)));
+        var queen = new Queen("White", new Position("e4"));
+        var chessBoard = InitializeCustomBoard((queen, new Position("e4")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (4, 7); // Move horizontally
+        var targetPosition = new Position("h4"); // Move horizontally
 
         // Act
         bool isValid = queen.IsValidMove(targetPosition, gameContext);
@@ -57,15 +59,15 @@ public class QueenTests : TestHelper
     public void Queen_IsValidMove_ShouldAllowDiagonalMove()
     {
         // Arrange
-        var queen = new Queen("White", (4, 4));
-        var chessBoard = InitializeCustomBoard((queen, (4, 4)));
+        var queen = new Queen("White", new Position("e4"));
+        var chessBoard = InitializeCustomBoard((queen, new Position("e4")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (6, 6); // Move diagonally
+        var targetPosition = new Position("g6"); // Move diagonally
 
         // Act
         bool isValid = queen.IsValidMove(targetPosition, gameContext);
@@ -78,11 +80,11 @@ public class QueenTests : TestHelper
     public void Queen_IsValidMove_ShouldRejectMoveThroughPieces()
     {
         // Arrange
-        var queen = new Queen("White", (4, 4));
-        var blockingPiece = new Pawn("White", (5, 5));
+        var queen = new Queen("White", new Position("e4"));
+        var blockingPiece = new Pawn("White", new Position("f5"));
         var chessBoard = InitializeCustomBoard(
-            (queen, (4, 4)),
-            (blockingPiece, (5, 5))
+            (queen, new Position("e4")),
+            (blockingPiece, new Position("f5"))
         );
 
         var gameContext = new GameContextBuilder()
@@ -90,7 +92,7 @@ public class QueenTests : TestHelper
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (6, 6); // Attempt to move diagonally through the pawn
+        var targetPosition = new Position("g6"); // Attempt to move diagonally through the pawn
 
         // Act
         bool isValid = queen.IsValidMove(targetPosition, gameContext);
@@ -103,15 +105,15 @@ public class QueenTests : TestHelper
     public void Queen_IsValidMove_ShouldRejectInvalidMove()
     {
         // Arrange
-        var queen = new Queen("White", (4, 4));
-        var chessBoard = InitializeCustomBoard((queen, (4, 4)));
+        var queen = new Queen("White", new Position("e4"));
+        var chessBoard = InitializeCustomBoard((queen, new Position("e4")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (2, 5); // Invalid move (not straight or diagonal)
+        var targetPosition = new Position("d6"); // Invalid move (not straight or diagonal)
 
         // Act
         bool isValid = queen.IsValidMove(targetPosition, gameContext);
@@ -124,11 +126,11 @@ public class QueenTests : TestHelper
     public void Queen_IsValidMove_ShouldCaptureOpponentPiece()
     {
         // Arrange
-        var queen = new Queen("White", (4, 4));
-        var opponentPawn = new Pawn("Black", (6, 6));
+        var queen = new Queen("White", new Position("e4"));
+        var opponentPawn = new Pawn("Black", new Position("g6"));
         var chessBoard = InitializeCustomBoard(
-            (queen, (4, 4)),
-            (opponentPawn, (6, 6))
+            (queen, new Position("e4")),
+            (opponentPawn, new Position("g6"))
         );
 
         var gameContext = new GameContextBuilder()
@@ -136,7 +138,7 @@ public class QueenTests : TestHelper
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (6, 6); // Capture opponent's pawn
+        var targetPosition = new Position("g6"); // Capture opponent's pawn
 
         // Act
         bool isValid = queen.IsValidMove(targetPosition, gameContext);
@@ -149,8 +151,8 @@ public class QueenTests : TestHelper
     public void Queen_OnMoved_ShouldNotUpdatePositionOrSwitchPlayer()
     {
         // Arrange
-        var queen = new Queen("White", (4, 4));
-        var chessBoard = InitializeCustomBoard((queen, (4, 4)));
+        var queen = new Queen("White", new Position("e4"));
+        var chessBoard = InitializeCustomBoard((queen, new Position("e4")));
 
         var gameContextBuilder = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -158,7 +160,7 @@ public class QueenTests : TestHelper
 
         var gameContext = gameContextBuilder.Build();
 
-        var targetPosition = (6, 6);
+        var targetPosition = new Position("g6");
 
         // Act
         queen.OnMoved(targetPosition, gameContext);
@@ -168,5 +170,7 @@ public class QueenTests : TestHelper
         gameContextBuilder.VerifyStateService(s =>
             s.Verify(ss => ss.SwitchPlayer(), Times.Never())); // Player should not be switched
     }
-
 }
+
+
+

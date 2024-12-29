@@ -4,6 +4,6 @@ namespace ChessMate.Services
 {
     public interface IMoveService
     {
-        bool TryMove((int Row, int Col) from, (int Row, int Col) to);
-        }
+        bool TryMove(Position from, Position to);
+    }
 }

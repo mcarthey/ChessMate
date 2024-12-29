@@ -4,7 +4,7 @@ namespace ChessMate.Utilities;
 
 public static class MoveValidationHelper
 {
-    public static bool IsPathClear((int Row, int Col) from, (int Row, int Col) to, IChessBoard board)
+    public static bool IsPathClear(Position from, Position to, IChessBoard board)
     {
         int rowStep = Math.Sign(to.Row - from.Row);
         int colStep = Math.Sign(to.Col - from.Col);
@@ -12,9 +12,10 @@ public static class MoveValidationHelper
         int currentRow = from.Row + rowStep;
         int currentCol = from.Col + colStep;
 
-        while ((currentRow, currentCol) != to)
+        while (new Position(currentRow, currentCol) != to)
         {
-            if (board.GetPieceAt((currentRow, currentCol)) != null)
+            var currentPosition = new Position(currentRow, currentCol);
+            if (board.GetPieceAt(currentPosition) != null)
                 return false;
 
             currentRow += rowStep;

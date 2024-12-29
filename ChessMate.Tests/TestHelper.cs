@@ -41,7 +41,8 @@ public abstract class TestHelper : TestFixture
             rowBuilder.Append($"{8 - row} |");
             for (int col = 0; col < 8; col++)
             {
-                var piece = board.GetPieceAt((row, col));
+                var position = new Position(row, col);
+                var piece = board.GetPieceAt(position);
                 if (piece?.Representation is null)
                 {
                     rowBuilder.Append($"{" . ",5}");
@@ -59,7 +60,7 @@ public abstract class TestHelper : TestFixture
         CustomOutput.Flush(); // Ensure output is flushed
     }
 
-    protected ChessBoard InitializeCustomBoard(params (ChessPiece piece, (int Row, int Col) position)[] pieces)
+    protected ChessBoard InitializeCustomBoard(params (ChessPiece piece, Position position)[] pieces)
     {
         var chessBoard = new ChessBoard();
         chessBoard.SetCustomBoard(pieces);

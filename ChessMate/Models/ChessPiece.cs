@@ -9,13 +9,13 @@ public abstract class ChessPiece
 {
     // Core properties
     public string Color { get; set; } // "White" or "Black"
-    public (int Row, int Col) Position { get; set; } // Current position on the board
+    public Position Position { get; set; } // Current position on the board
     public string Representation { get; protected set; } // Unicode representation
 
     /// <summary>
     /// Initializes a new chess piece.
     /// </summary>
-    protected ChessPiece(string color, (int Row, int Col) position, string representation)
+    protected ChessPiece(string color, Position position, string representation)
     {
         Color = color ?? throw new ArgumentNullException(nameof(color));
         Position = position;
@@ -26,13 +26,13 @@ public abstract class ChessPiece
     /// Validates whether the move is legal based on rules and game context.
     /// Must be overridden in derived classes.
     /// </summary>
-    public abstract bool IsValidMove((int Row, int Col) targetPosition, IGameContext context);
+    public abstract bool IsValidMove(Position targetPosition, IGameContext context);
 
     /// <summary>
     /// Handles updates to the piece after a successful move.
     /// Can be overridden in derived classes.
     /// </summary>
-    public virtual void OnMoved((int Row, int Col) to, IGameContext context)
+    public virtual void OnMoved(Position to, IGameContext context)
     {
         // Default implementation does nothing
         // Derived classes can override to implement specific behavior (e.g., pawn promotion)
@@ -41,7 +41,7 @@ public abstract class ChessPiece
     /// <summary>
     /// Handles errors during move validation.
     /// </summary>
-    protected virtual void HandleValidationError((int Row, int Col) targetPosition, Exception ex)
+    protected virtual void HandleValidationError(Position targetPosition, Exception ex)
     {
         string errorMessage = ex switch
         {

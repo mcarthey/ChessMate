@@ -5,7 +5,7 @@ namespace ChessMate.Models;
 
 public class Queen : ChessPiece
 {
-    public Queen(string color, (int Row, int Col) position)
+    public Queen(string color, Position position)
         : base(
             color,
             position,
@@ -16,7 +16,7 @@ public class Queen : ChessPiece
     /// <summary>
     /// Validates the queen's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove((int Row, int Col) targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IGameContext context)
     {
         var board = context.Board;
 
@@ -39,7 +39,7 @@ public class Queen : ChessPiece
     }
 
     // Optional: Override OnMoved if queen has specific post-move behavior
-    public override void OnMoved((int Row, int Col) to, IGameContext context)
+    public override void OnMoved(Position to, IGameContext context)
     {
         base.OnMoved(to, context);
         // Add any queen-specific logic here if needed

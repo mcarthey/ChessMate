@@ -6,11 +6,11 @@ namespace ChessMate.Models
     {
         void InitializeBoard();
 
-        ChessPiece GetPieceAt((int Row, int Col) position);
-        void SetPieceAt((int Row, int Col) position, ChessPiece piece);
-        void RemovePieceAt((int Row, int Col) position);
+        ChessPiece GetPieceAt(Position position);
+        void SetPieceAt(Position position, ChessPiece piece);
+        void RemovePieceAt(Position position);
 
-        (int Row, int Col) FindKing(string color);
+        Position FindKing(string color);
 
         IEnumerable<ChessPiece> GetAllPieces();
     }

@@ -16,24 +16,24 @@ public class KnightTests : TestHelper
     public void Knight_IsValidMove_ShouldAllowLShapedMoves()
     {
         // Arrange
-        var knight = new Knight("White", (4, 4));
-        var chessBoard = InitializeCustomBoard((knight, (4, 4)));
+        var knight = new Knight("White", new Position("e4"));
+        var chessBoard = InitializeCustomBoard((knight, new Position("e4")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var validMoves = new List<(int Row, int Col)>
+        var validMoves = new List<Position>
         {
-            (2, 3), // Up 2, Left 1
-            (2, 5), // Up 2, Right 1
-            (3, 2), // Up 1, Left 2
-            (3, 6), // Up 1, Right 2
-            (5, 2), // Down 1, Left 2
-            (5, 6), // Down 1, Right 2
-            (6, 3), // Down 2, Left 1
-            (6, 5), // Down 2, Right 1
+            new Position("d6"), // Up 2, Left 1
+            new Position("f6"), // Up 2, Right 1
+            new Position("c5"), // Up 1, Left 2
+            new Position("g5"), // Up 1, Right 2
+            new Position("c3"), // Down 1, Left 2
+            new Position("g3"), // Down 1, Right 2
+            new Position("d2"), // Down 2, Left 1
+            new Position("f2"), // Down 2, Right 1
         };
 
         foreach (var targetPosition in validMoves)
@@ -50,20 +50,20 @@ public class KnightTests : TestHelper
     public void Knight_IsValidMove_ShouldRejectInvalidMoves()
     {
         // Arrange
-        var knight = new Knight("White", (4, 4));
-        var chessBoard = InitializeCustomBoard((knight, (4, 4)));
+        var knight = new Knight("White", new Position("e4"));
+        var chessBoard = InitializeCustomBoard((knight, new Position("e4")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var invalidMoves = new List<(int Row, int Col)>
+        var invalidMoves = new List<Position>
         {
-            (4, 5), // One square right
-            (5, 5), // One square diagonal
-            (7, 7), // Far away
-            (4, 4), // Same position
+            new Position("e5"), // One square right
+            new Position("f5"), // One square diagonal
+            new Position("h7"), // Far away
+            new Position("e4"), // Same position
         };
 
         foreach (var targetPosition in invalidMoves)
@@ -80,16 +80,16 @@ public class KnightTests : TestHelper
     public void Knight_IsValidMove_ShouldAllowCaptureOfOpponentPiece()
     {
         // Arrange
-        var knight = new Knight("White", (4, 4));
-        var opponentPawn = new Pawn("Black", (2, 3));
-        var chessBoard = InitializeCustomBoard((knight, (4, 4)), (opponentPawn, (2, 3)));
+        var knight = new Knight("White", new Position("e4"));
+        var opponentPawn = new Pawn("Black", new Position("d6"));
+        var chessBoard = InitializeCustomBoard((knight, new Position("e4")), (opponentPawn, new Position("d6")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (2, 3); // Opponent's piece
+        var targetPosition = new Position("d6"); // Opponent's piece
 
         // Act
         bool isValid = knight.IsValidMove(targetPosition, gameContext);
@@ -102,16 +102,16 @@ public class KnightTests : TestHelper
     public void Knight_IsValidMove_ShouldNotCaptureOwnPiece()
     {
         // Arrange
-        var knight = new Knight("White", (4, 4));
-        var ownPawn = new Pawn("White", (2, 3));
-        var chessBoard = InitializeCustomBoard((knight, (4, 4)), (ownPawn, (2, 3)));
+        var knight = new Knight("White", new Position("e4"));
+        var ownPawn = new Pawn("White", new Position("d6"));
+        var chessBoard = InitializeCustomBoard((knight, new Position("e4")), (ownPawn, new Position("d6")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (2, 3); // Own piece
+        var targetPosition = new Position("d6"); // Own piece
 
         // Act
         bool isValid = knight.IsValidMove(targetPosition, gameContext);
@@ -124,14 +124,14 @@ public class KnightTests : TestHelper
     public void Knight_IsValidMove_ShouldIgnorePiecesInTheWay()
     {
         // Arrange
-        var knight = new Knight("White", (7, 1));
-        var blockingPiece1 = new Pawn("White", (6, 1));
-        var blockingPiece2 = new Pawn("Black", (6, 2));
+        var knight = new Knight("White", new Position("b1"));
+        var blockingPiece1 = new Pawn("White", new Position("b2"));
+        var blockingPiece2 = new Pawn("Black", new Position("c2"));
 
         var chessBoard = InitializeCustomBoard(
-            (knight, (7, 1)),
-            (blockingPiece1, (6, 1)),
-            (blockingPiece2, (6, 2))
+            (knight, new Position("b1")),
+            (blockingPiece1, new Position("b2")),
+            (blockingPiece2, new Position("c2"))
         );
 
         var gameContext = new GameContextBuilder()
@@ -139,7 +139,7 @@ public class KnightTests : TestHelper
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (5, 2); // Valid L-shaped move
+        var targetPosition = new Position("c3"); // Valid L-shaped move
 
         // Act
         bool isValid = knight.IsValidMove(targetPosition, gameContext);
@@ -152,17 +152,19 @@ public class KnightTests : TestHelper
     public void Knight_IsValidMove_ShouldRejectOutOfBoundsMove()
     {
         // Arrange
-        var knight = new Knight("White", (0, 0));
-        var chessBoard = InitializeCustomBoard((knight, (0, 0)));
+        var knight = new Knight("White", new Position("a1"));
+        var chessBoard = InitializeCustomBoard((knight, new Position("a1")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (-2, -1); // Out of bounds
+        var targetPosition = new Position(-2, -1); // Out of bounds
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => knight.IsValidMove(targetPosition, gameContext));
     }
 }
+
+

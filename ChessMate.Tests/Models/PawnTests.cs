@@ -1,5 +1,3 @@
-// File: ChessMate.Tests/Models/PawnTests.cs
-
 using ChessMate.Models;
 using Moq;
 using Xunit;
@@ -17,15 +15,15 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldAllowSingleSquareMove()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 4));
-        var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
+        var pawn = new Pawn("White", new Position("e2"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (5, 4); // Move forward one square
+        var targetPosition = new Position("e3"); // Move forward one square
 
         // Act
         bool isValid = pawn.IsValidMove(targetPosition, gameContext);
@@ -38,15 +36,15 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldAllowDoubleSquareMoveOnFirstMove()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 4));
-        var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
+        var pawn = new Pawn("White", new Position("e2"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (4, 4); // Move forward two squares
+        var targetPosition = new Position("e4"); // Move forward two squares
 
         // Act
         bool isValid = pawn.IsValidMove(targetPosition, gameContext);
@@ -59,15 +57,15 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldRejectDoubleSquareMoveAfterFirstMove()
     {
         // Arrange
-        var pawn = new Pawn("White", (5, 4));
-        var chessBoard = InitializeCustomBoard((pawn, (5, 4)));
+        var pawn = new Pawn("White", new Position("e3"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e3")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (3, 4); // Attempt to move two squares forward
+        var targetPosition = new Position("e5"); // Attempt to move two squares forward
 
         // Act
         bool isValid = pawn.IsValidMove(targetPosition, gameContext);
@@ -80,16 +78,16 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldAllowDiagonalCapture()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 4));
-        var opponentPawn = new Pawn("Black", (5, 5));
-        var chessBoard = InitializeCustomBoard((pawn, (6, 4)), (opponentPawn, (5, 5)));
+        var pawn = new Pawn("White", new Position("e2"));
+        var opponentPawn = new Pawn("Black", new Position("f3"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")), (opponentPawn, new Position("f3")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (5, 5); // Capture diagonally
+        var targetPosition = new Position("f3"); // Capture diagonally
 
         // Act
         bool isValid = pawn.IsValidMove(targetPosition, gameContext);
@@ -102,15 +100,15 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldRejectInvalidDiagonalMove()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 4));
-        var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
+        var pawn = new Pawn("White", new Position("e2"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (5, 5); // Diagonal move without capture
+        var targetPosition = new Position("f3"); // Diagonal move without capture
 
         // Act
         bool isValid = pawn.IsValidMove(targetPosition, gameContext);
@@ -123,15 +121,15 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldRejectBackwardMove()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 4));
-        var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
+        var pawn = new Pawn("White", new Position("e2"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (7, 4); // Move backward
+        var targetPosition = new Position("e1"); // Move backward
 
         // Act
         bool isValid = pawn.IsValidMove(targetPosition, gameContext);
@@ -144,16 +142,16 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldRejectMoveToOccupiedSquare()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 4));
-        var blockingPawn = new Pawn("Black", (5, 4));
-        var chessBoard = InitializeCustomBoard((pawn, (6, 4)), (blockingPawn, (5, 4)));
+        var pawn = new Pawn("White", new Position("e2"));
+        var blockingPawn = new Pawn("Black", new Position("e3"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")), (blockingPawn, new Position("e3")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
             .Build();
 
-        var targetPosition = (5, 4); // Move to occupied square
+        var targetPosition = new Position("e3"); // Move to occupied square
 
         // Act
         bool isValid = pawn.IsValidMove(targetPosition, gameContext);
@@ -166,8 +164,8 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldRejectMoveOutOfBounds()
     {
         // Arrange
-        var pawn = new Pawn("White", (0, 0));
-        var chessBoard = InitializeCustomBoard((pawn, (0, 0)));
+        var pawn = new Pawn("White", new Position("a1"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("a1")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -175,7 +173,7 @@ public class PawnTests : TestHelper
             .Build();
 
         PrintBoard(chessBoard);
-        var targetPosition = (-1, 0); // Move out of bounds
+        var targetPosition = new Position(-1, 0); // Move out of bounds
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => pawn.IsValidMove(targetPosition, gameContext));
@@ -185,21 +183,21 @@ public class PawnTests : TestHelper
     public void Pawn_IsValidMove_ShouldAllowEnPassantCapture()
     {
         // Arrange
-        var whitePawn = new Pawn("White", (3, 4));
-        var blackPawn = new Pawn("Black", (3, 5));
+        var whitePawn = new Pawn("White", new Position("e5"));
+        var blackPawn = new Pawn("Black", new Position("d5"));
 
         var chessBoard = InitializeCustomBoard(
-            (whitePawn, (3, 4)),
-            (blackPawn, (3, 5))
+            (whitePawn, new Position("e5")),
+            (blackPawn, new Position("d5"))
         );
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .WithCurrentPlayer("White")
-            .WithEnPassantTarget((2, 5), blackPawn)
+            .WithEnPassantTarget(new Position("d6"), blackPawn)
             .Build();
 
-        var targetPosition = (2, 5); // White pawn captures en passant
+        var targetPosition = new Position("d6"); // White pawn captures en passant
 
         // Act
         bool isValid = whitePawn.IsValidMove(targetPosition, gameContext);
@@ -212,11 +210,11 @@ public class PawnTests : TestHelper
     public void Pawn_OnMoved_ShouldSetEnPassantTarget()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 4));
-        var targetPosition = (4, 4); // Double move forward
-        var expectedEnPassantTarget = (5, 4);
+        var pawn = new Pawn("White", new Position("e2"));
+        var targetPosition = new Position("e4"); // Double move forward
+        var expectedEnPassantTarget = new Position("e3");
 
-        var chessBoard = InitializeCustomBoard((pawn, (6, 4)));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
 
         var gameContextBuilder = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -241,14 +239,14 @@ public class PawnTests : TestHelper
     public void Pawn_OnMoved_ShouldPromoteAtEndOfBoard()
     {
         // Arrange
-        var pawn = new Pawn("White", (1, 4));
-        var chessBoard = InitializeCustomBoard((pawn, (1, 4)));
+        var pawn = new Pawn("White", new Position("e7"));
+        var chessBoard = InitializeCustomBoard((pawn, new Position("e7")));
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
             .Build();
 
-        var targetPosition = (0, 4); // Move to promotion rank
+        var targetPosition = new Position("e8"); // Move to promotion rank
 
         // Act
         pawn.OnMoved(targetPosition, gameContext);

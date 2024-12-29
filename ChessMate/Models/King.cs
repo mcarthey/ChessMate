@@ -5,7 +5,7 @@ namespace ChessMate.Models;
 
 public class King : ChessPiece
 {
-    public King(string color, (int Row, int Col) position)
+    public King(string color, Position position)
         : base(
             color,
             position,
@@ -16,7 +16,7 @@ public class King : ChessPiece
     /// <summary>
     /// Validates the king's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove((int Row, int Col) targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IGameContext context)
     {
         var board = context.Board;
         var state = context.State;
@@ -46,7 +46,7 @@ public class King : ChessPiece
     }
 
     // Optional: Override OnMoved if king has specific post-move behavior
-    public override void OnMoved((int Row, int Col) to, IGameContext context)
+    public override void OnMoved(Position to, IGameContext context)
     {
         base.OnMoved(to, context);
         // Add any king-specific logic here if needed (e.g., updating castling rights)
@@ -55,7 +55,7 @@ public class King : ChessPiece
     /// <summary>
     /// Handles errors during move validation specific to the king.
     /// </summary>
-    protected override void HandleValidationError((int Row, int Col) targetPosition, Exception ex)
+    protected override void HandleValidationError(Position targetPosition, Exception ex)
     {
         // Additional error handling if needed
         base.HandleValidationError(targetPosition, ex);

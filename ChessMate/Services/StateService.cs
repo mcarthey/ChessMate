@@ -7,7 +7,7 @@ public class StateService : IStateService
     public string CurrentPlayer { get; private set; } = "White";
     public bool IsCheck { get; set; }
     public bool IsCheckmate { get; set; }
-    public (int Row, int Col)? EnPassantTarget { get; private set; } // Track en passant target
+    public Position? EnPassantTarget { get; private set; } // Track en passant target
 
     // Castling flags
     public bool WhiteKingMoved { get; set; }
@@ -41,12 +41,10 @@ public class StateService : IStateService
         CurrentPlayer = player;
     }
 
-    // Removed IsKingInCheck and HasLegalMoves methods
-
     /// <summary>
     /// Sets the en passant target position and ensures it applies only to pawns.
     /// </summary>
-    public void SetEnPassantTarget((int Row, int Col) target, ChessPiece piece)
+    public void SetEnPassantTarget(Position target, ChessPiece piece)
     {
         if (piece is Pawn)
         {
@@ -79,4 +77,22 @@ public class StateService : IStateService
 
         MoveLog.Clear();
     }
+
+    /// <summary>
+    /// Updates the game state after a move.
+    /// </summary>
+    public void UpdateGameStateAfterMove(ChessPiece piece, Position from, Position to, IGameContext context, IGameStateEvaluator gameStateEvaluator)
+    {
+        // Log the move
+        MoveLog.Add($"{piece.Color} {piece.GetType().Name} from {from} to {to}");
+
+        // Switch player after the move is completed
+        SwitchPlayer();
+
+        // Update check and checkmate status
+        string opponentColor = CurrentPlayer;
+        IsCheck = gameStateEvaluator.IsKingInCheck(opponentColor, context);
+        IsCheckmate = IsCheck && !gameStateEvaluator.HasLegalMoves(opponentColor, context);
+    }
 }
+

@@ -1,7 +1,6 @@
-// File: ChessMate.Tests/Services/StateServiceTests.cs
-
 using ChessMate.Models;
 using ChessMate.Services;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,7 +13,7 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_InitialState_ShouldSetCurrentPlayerToWhite()
+    public void InitialState_CurrentPlayer_ShouldBeWhite()
     {
         // Arrange & Act
         var currentPlayer = StateService.CurrentPlayer;
@@ -24,7 +23,7 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_SwitchPlayer_ShouldToggleCurrentPlayer()
+    public void SwitchPlayer_TogglesCurrentPlayer()
     {
         // Arrange
         StateService.SwitchPlayer();
@@ -41,7 +40,7 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_SetPlayer_ShouldSetCurrentPlayer()
+    public void SetPlayer_ValidPlayer_SetsCurrentPlayer()
     {
         // Arrange & Act
         StateService.SetPlayer("Black");
@@ -51,7 +50,7 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_SetPlayer_ShouldThrowExceptionForInvalidPlayer()
+    public void SetPlayer_InvalidPlayer_ThrowsException()
     {
         // Arrange & Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => StateService.SetPlayer("Green"));
@@ -59,11 +58,11 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_SetEnPassantTarget_ShouldSetTargetForPawn()
+    public void SetEnPassantTarget_Pawn_SetsTarget()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 0));
-        var targetPosition = (5, 0);
+        var pawn = new Pawn("White", new Position("a2"));
+        var targetPosition = new Position("a3");
 
         // Act
         StateService.SetEnPassantTarget(targetPosition, pawn);
@@ -73,11 +72,11 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_SetEnPassantTarget_ShouldNotSetTargetForNonPawn()
+    public void SetEnPassantTarget_NonPawn_DoesNotSetTarget()
     {
         // Arrange
-        var rook = new Rook("White", (6, 0));
-        var targetPosition = (5, 0);
+        var rook = new Rook("White", new Position("a2"));
+        var targetPosition = new Position("a3");
 
         // Act
         StateService.SetEnPassantTarget(targetPosition, rook);
@@ -87,11 +86,11 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_ResetEnPassantTarget_ShouldClearTarget()
+    public void ResetEnPassantTarget_ClearsTarget()
     {
         // Arrange
-        var pawn = new Pawn("White", (6, 0));
-        var targetPosition = (5, 0);
+        var pawn = new Pawn("White", new Position("a2"));
+        var targetPosition = new Position("a3");
         StateService.SetEnPassantTarget(targetPosition, pawn);
 
         // Act
@@ -102,15 +101,15 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_ResetState_ShouldResetAllProperties()
+    public void ResetState_ResetsAllProperties()
     {
         // Arrange
         // Change various properties
         StateService.SetPlayer("Black");
         StateService.IsCheck = true;
         StateService.IsCheckmate = true;
-        var pawn = new Pawn("White", (6, 0));
-        StateService.SetEnPassantTarget((5, 0), pawn);
+        var pawn = new Pawn("White", new Position("a2"));
+        StateService.SetEnPassantTarget(new Position("a3"), pawn);
         StateService.WhiteKingMoved = true;
         StateService.BlackKingMoved = true;
         StateService.WhiteRookKingSideMoved = true;
@@ -137,7 +136,7 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_CastlingFlags_ShouldDefaultToFalse()
+    public void CastlingFlags_DefaultToFalse()
     {
         // Arrange & Act
         var whiteKingMoved = StateService.WhiteKingMoved;
@@ -157,7 +156,7 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_MoveLog_ShouldInitializeEmpty()
+    public void MoveLog_InitializesEmpty()
     {
         // Arrange & Act
         var moveLog = StateService.MoveLog;
@@ -168,7 +167,7 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_MoveLog_ShouldClearOnReset()
+    public void MoveLog_ClearsOnReset()
     {
         // Arrange
         StateService.MoveLog.Add("e2e4");
@@ -183,7 +182,7 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_IsCheck_ShouldBeSettable()
+    public void IsCheck_Settable()
     {
         // Arrange & Act
         StateService.IsCheck = true;
@@ -193,12 +192,30 @@ public class StateServiceTests : TestHelper
     }
 
     [Fact]
-    public void StateService_IsCheckmate_ShouldBeSettable()
+    public void IsCheckmate_Settable()
     {
         // Arrange & Act
         StateService.IsCheckmate = true;
 
         // Assert
         Assert.True(StateService.IsCheckmate);
+    }
+
+    [Fact]
+    public void UpdateGameStateAfterMove_LogsMove()
+    {
+        // Arrange
+        var from = new Position("a2");
+        var to = new Position("a3");
+        var whitePawn = new Pawn("White", from);
+        var gameContext = new GameContextBuilder().Build();
+        var gameStateEvaluator = new Mock<IGameStateEvaluator>();
+
+        // Act
+        StateService.UpdateGameStateAfterMove(whitePawn, from, to, gameContext, gameStateEvaluator.Object);
+
+        // Assert
+        Assert.Single(StateService.MoveLog);
+        Assert.Equal("White Pawn from a2 to a3", StateService.MoveLog.First());
     }
 }

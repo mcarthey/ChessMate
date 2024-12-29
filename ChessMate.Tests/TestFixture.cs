@@ -17,6 +17,8 @@ public class TestFixture : IDisposable
         serviceCollection.AddScoped<IStateService, StateService>();
         serviceCollection.AddScoped<IMoveService, MoveService>();
         serviceCollection.AddScoped<IGameContext, GameContext>();
+        serviceCollection.AddScoped<IGameStateEvaluator, GameStateEvaluator>();
+        serviceCollection.AddScoped<IMoveValidatorService, MoveValidatorService>();
 
         ServiceProvider = serviceCollection.BuildServiceProvider();
     }

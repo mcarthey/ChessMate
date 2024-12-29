@@ -1,3 +1,5 @@
+// File: ChessMate.Tests/Services/GameEngineTests.cs
+
 using ChessMate.Models;
 using ChessMate.Services;
 using ChessMate.Utilities;
@@ -44,12 +46,12 @@ public class GameEngineTests : TestHelper
         // Arrange
         var fromNotation = "e2";
         var toNotation = "e4";
-        var from = ChessNotationUtility.FromChessNotation(fromNotation);
-        var to = ChessNotationUtility.FromChessNotation(toNotation);
+        var from = new Position(fromNotation);
+        var to = new Position(toNotation);
         _mockMoveService.Setup(move => move.TryMove(from, to)).Returns(true);
 
         // Act
-        var result = _gameEngine.ProcessMove(fromNotation, toNotation);
+        var result = _gameEngine.ProcessMove(from, to);
 
         // Assert
         Assert.True(result);
@@ -67,12 +69,12 @@ public class GameEngineTests : TestHelper
         // Arrange
         var fromNotation = "e2";
         var toNotation = "e5";
-        var from = ChessNotationUtility.FromChessNotation(fromNotation);
-        var to = ChessNotationUtility.FromChessNotation(toNotation);
+        var from = new Position(fromNotation);
+        var to = new Position(toNotation);
         _mockMoveService.Setup(move => move.TryMove(from, to)).Returns(false);
 
         // Act
-        var result = _gameEngine.ProcessMove(fromNotation, toNotation);
+        var result = _gameEngine.ProcessMove(from, to);
 
         // Assert
         Assert.False(result);
@@ -117,3 +119,5 @@ public class GameEngineTests : TestHelper
     }
 
 }
+
+

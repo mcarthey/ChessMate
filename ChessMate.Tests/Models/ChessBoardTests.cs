@@ -20,10 +20,10 @@ public class ChessBoardTests : TestHelper
         chessBoard.InitializeBoard(); // Ensure the board is initialized
 
         // Act
-        var whitePawn = chessBoard.GetPieceAt((6, 0));
-        var blackPawn = chessBoard.GetPieceAt((1, 0));
-        var whiteRook = chessBoard.GetPieceAt((7, 0));
-        var blackKing = chessBoard.GetPieceAt((0, 4));
+        var whitePawn = chessBoard.GetPieceAt(new Position("a2"));
+        var blackPawn = chessBoard.GetPieceAt(new Position("a7"));
+        var whiteRook = chessBoard.GetPieceAt(new Position("a1"));
+        var blackKing = chessBoard.GetPieceAt(new Position("e8"));
 
         // Assert
         Assert.NotNull(whitePawn);
@@ -39,8 +39,8 @@ public class ChessBoardTests : TestHelper
     {
         // Arrange
         var chessBoard = new ChessBoard();
-        var whitePawn = new Pawn("White", (6, 0));
-        var position = (4, 4);
+        var whitePawn = new Pawn("White", new Position("a2"));
+        var position = new Position("e4");
 
         // Act
         chessBoard.SetPieceAt(position, whitePawn);
@@ -57,14 +57,14 @@ public class ChessBoardTests : TestHelper
     {
         // Arrange
         var chessBoard = InitializeCustomBoard(
-            (new Pawn("White", (6, 0)), (6, 0))
+            (new Pawn("White", new Position("a2")), new Position("a2"))
         );
 
         // Act
-        chessBoard.RemovePieceAt((6, 0));
+        chessBoard.RemovePieceAt(new Position("a2"));
 
         // Assert
-        var piece = chessBoard.GetPieceAt((6, 0));
+        var piece = chessBoard.GetPieceAt(new Position("a2"));
         Assert.Null(piece);
     }
 
@@ -72,11 +72,11 @@ public class ChessBoardTests : TestHelper
     public void ChessBoard_FindKing_ShouldReturnCorrectPosition()
     {
         // Arrange
-        var whiteKing = new King("White", (7, 4));
-        var blackKing = new King("Black", (0, 4));
+        var whiteKing = new King("White", new Position("e1"));
+        var blackKing = new King("Black", new Position("e8"));
         var chessBoard = InitializeCustomBoard(
-            (whiteKing, (7, 4)),
-            (blackKing, (0, 4))
+            (whiteKing, new Position("e1")),
+            (blackKing, new Position("e8"))
         );
 
         // Act
@@ -84,20 +84,20 @@ public class ChessBoardTests : TestHelper
         var blackKingPosition = chessBoard.FindKing("Black");
 
         // Assert
-        Assert.Equal((7, 4), whiteKingPosition);
-        Assert.Equal((0, 4), blackKingPosition);
+        Assert.Equal(new Position("e1"), whiteKingPosition);
+        Assert.Equal(new Position("e8"), blackKingPosition);
     }
 
     [Fact]
     public void ChessBoard_GetAllPieces_ShouldReturnAllPieces()
     {
         // Arrange
-        var pieces = new (ChessPiece piece, (int Row, int Col) position)[]
+        var pieces = new (ChessPiece piece, Position position)[]
         {
-            (new King("White", (7, 4)), (7, 4)),
-            (new King("Black", (0, 4)), (0, 4)),
-            (new Pawn("White", (6, 0)), (6, 0)),
-            (new Pawn("Black", (1, 0)), (1, 0))
+            (new King("White", new Position("e1")), new Position("e1")),
+            (new King("Black", new Position("e8")), new Position("e8")),
+            (new Pawn("White", new Position("a2")), new Position("a2")),
+            (new Pawn("Black", new Position("a7")), new Position("a7"))
         };
         var chessBoard = InitializeCustomBoard(pieces);
 
@@ -114,22 +114,22 @@ public class ChessBoardTests : TestHelper
     public void ChessBoard_SetCustomBoard_ShouldSetUpCustomPiecesCorrectly()
     {
         // Arrange
-        var whitePawn = new Pawn("White", (6, 0));
-        var blackPawn = new Pawn("Black", (1, 0));
-        var whiteKing = new King("White", (7, 4));
-        var blackKing = new King("Black", (0, 4));
+        var whitePawn = new Pawn("White", new Position("a2"));
+        var blackPawn = new Pawn("Black", new Position("a7"));
+        var whiteKing = new King("White", new Position("e1"));
+        var blackKing = new King("Black", new Position("e8"));
         var chessBoard = InitializeCustomBoard(
-            (whitePawn, (6, 0)),
-            (blackPawn, (1, 0)),
-            (whiteKing, (7, 4)),
-            (blackKing, (0, 4))
+            (whitePawn, new Position("a2")),
+            (blackPawn, new Position("a7")),
+            (whiteKing, new Position("e1")),
+            (blackKing, new Position("e8"))
         );
 
         // Act
-        var customWhitePawn = chessBoard.GetPieceAt((6, 0));
-        var customBlackPawn = chessBoard.GetPieceAt((1, 0));
-        var customWhiteKing = chessBoard.GetPieceAt((7, 4));
-        var customBlackKing = chessBoard.GetPieceAt((0, 4));
+        var customWhitePawn = chessBoard.GetPieceAt(new Position("a2"));
+        var customBlackPawn = chessBoard.GetPieceAt(new Position("a7"));
+        var customWhiteKing = chessBoard.GetPieceAt(new Position("e1"));
+        var customBlackKing = chessBoard.GetPieceAt(new Position("e8"));
 
         // Assert
         Assert.NotNull(customWhitePawn);
@@ -142,4 +142,6 @@ public class ChessBoardTests : TestHelper
         Assert.IsType<King>(customBlackKing);
     }
 }
+
+
 

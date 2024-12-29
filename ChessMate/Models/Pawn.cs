@@ -4,7 +4,7 @@ namespace ChessMate.Models;
 
 public class Pawn : ChessPiece
 {
-    public Pawn(string color, (int Row, int Col) position)
+    public Pawn(string color, Position position)
         : base(
             color,
             position,
@@ -15,7 +15,7 @@ public class Pawn : ChessPiece
     /// <summary>
     /// Validates the pawn's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove((int Row, int Col) targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IGameContext context)
     {
         var board = context.Board;
         var state = context.State;
@@ -34,7 +34,7 @@ public class Pawn : ChessPiece
         int startingRow = (Color == "White") ? 6 : 1;
         if (colDifference == 0 && rowDifference == 2 * forwardDirection && Position.Row == startingRow)
         {
-            var middleSquare = (Position.Row + forwardDirection, Position.Col);
+            var middleSquare = new Position(Position.Row + forwardDirection, Position.Col);
             return board.GetPieceAt(targetPosition) == null && board.GetPieceAt(middleSquare) == null;
         }
 
@@ -49,9 +49,9 @@ public class Pawn : ChessPiece
 
             // 4. En passant capture
             var enPassantTarget = state.EnPassantTarget;
-            if (enPassantTarget.HasValue && enPassantTarget.Value == targetPosition)
+            if (enPassantTarget.HasValue && enPassantTarget.Value.Equals(targetPosition))
             {
-                var adjacentPiecePosition = (Position.Row, targetPosition.Col);
+                var adjacentPiecePosition = new Position(Position.Row, targetPosition.Col);
                 var adjacentPiece = board.GetPieceAt(adjacentPiecePosition);
                 if (adjacentPiece is Pawn && adjacentPiece.Color != Color)
                 {
@@ -66,7 +66,7 @@ public class Pawn : ChessPiece
     /// <summary>
     /// Handles updates to the state after a successful move.
     /// </summary>
-    public override void OnMoved((int Row, int Col) to, IGameContext context)
+    public override void OnMoved(Position to, IGameContext context)
     {
         var state = context.State;
         var board = context.Board;
@@ -74,7 +74,8 @@ public class Pawn : ChessPiece
         // En passant eligibility
         if (Math.Abs(to.Row - Position.Row) == 2) // Moved two squares
         {
-            var enPassantTarget = ((Position.Row + to.Row) / 2, to.Col);
+            var enPassantTargetRow = (Position.Row + to.Row) / 2;
+            var enPassantTarget = new Position(enPassantTargetRow, to.Col);
             state.SetEnPassantTarget(enPassantTarget, this);
         }
         else

@@ -26,7 +26,7 @@
                         <th>@(8 - row)</th>
                         @for (int col = 0; col < 8; col++)
                         {
-                            var position = (row, col);
+                            var position = new Position(row, col);
                             var piece = GameEngine.Board.GetPieceAt(position);
                             <td @onclick="() => SelectSquare(position)"
                                 class="@GetSquareClass(position)">
@@ -70,9 +70,9 @@
 
 @code {
     private string? errorMessage;
-    private (int Row, int Col)? selectedPosition;
+    private Position? selectedPosition;
 
-    private void SelectSquare((int Row, int Col) position)
+    private void SelectSquare(Position position)
     {
         if (selectedPosition == null)
         {
@@ -80,8 +80,8 @@
         }
         else
         {
-            var from = ChessNotationUtility.ToChessNotation(selectedPosition.Value);
-            var to = ChessNotationUtility.ToChessNotation(position);
+            var from = selectedPosition.Value;
+            var to = position;
 
             bool success = GameEngine.ProcessMove(from, to);
             if (!success)
@@ -96,7 +96,7 @@
         }
     }
 
-    private string GetSquareClass((int Row, int Col) position)
+    private string GetSquareClass(Position position)
     {
         var baseClass = (position.Row + position.Col) % 2 == 0 ? "light" : "dark";
         if (selectedPosition == position)

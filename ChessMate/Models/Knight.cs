@@ -4,7 +4,7 @@ namespace ChessMate.Models;
 
 public class Knight : ChessPiece
 {
-    public Knight(string color, (int Row, int Col) position)
+    public Knight(string color, Position position)
         : base(
             color,
             position,
@@ -15,7 +15,7 @@ public class Knight : ChessPiece
     /// <summary>
     /// Validates the knight's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove((int Row, int Col) targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IGameContext context)
     {
         int rowDiff = Math.Abs(targetPosition.Row - Position.Row);
         int colDiff = Math.Abs(targetPosition.Col - Position.Col);
@@ -34,7 +34,7 @@ public class Knight : ChessPiece
     }
 
     // Optional: Override OnMoved if knight has specific post-move behavior
-    public override void OnMoved((int Row, int Col) to, IGameContext context)
+    public override void OnMoved(Position to, IGameContext context)
     {
         base.OnMoved(to, context);
         // Add any knight-specific logic here if needed

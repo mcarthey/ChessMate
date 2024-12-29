@@ -18,11 +18,8 @@ public class GameEngine : IGameEngine
         Board.InitializeBoard();
     }
 
-    public bool ProcessMove(string fromNotation, string toNotation)
+    public bool ProcessMove(Position from, Position to)
     {
-        var from = ChessNotationUtility.FromChessNotation(fromNotation);
-        var to = ChessNotationUtility.FromChessNotation(toNotation);
-
         return Move.TryMove(from, to);
     }
 

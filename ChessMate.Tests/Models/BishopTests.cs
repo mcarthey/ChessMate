@@ -16,9 +16,9 @@ public class BishopTests : TestHelper
     public void Bishop_IsValidMove_ShouldAllowDiagonalMove()
     {
         // Arrange
-        var bishop = new Bishop("White", (7, 2));
-        var chessBoard = InitializeCustomBoard((bishop, (7, 2)));
-        var targetPosition = (5, 4); // Move to (5, 4)
+        var bishop = new Bishop("White", new Position("c1"));
+        var chessBoard = InitializeCustomBoard((bishop, new Position("c1")));
+        var targetPosition = new Position("e3"); // Move to e3
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -36,9 +36,9 @@ public class BishopTests : TestHelper
     public void Bishop_IsValidMove_ShouldRejectNonDiagonalMove()
     {
         // Arrange
-        var bishop = new Bishop("White", (7, 2));
-        var chessBoard = InitializeCustomBoard((bishop, (7, 2)));
-        var targetPosition = (6, 2); // Move to (6, 2) - non-diagonal move
+        var bishop = new Bishop("White", new Position("c1"));
+        var chessBoard = InitializeCustomBoard((bishop, new Position("c1")));
+        var targetPosition = new Position("c2"); // Move to c2 - non-diagonal move
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -56,10 +56,10 @@ public class BishopTests : TestHelper
     public void Bishop_IsValidMove_ShouldAllowCapture()
     {
         // Arrange
-        var bishop = new Bishop("White", (7, 2));
-        var blackPawn = new Pawn("Black", (5, 4));
-        var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (blackPawn, (5, 4)));
-        var targetPosition = (5, 4); // Capture at (5, 4)
+        var bishop = new Bishop("White", new Position("c1"));
+        var blackPawn = new Pawn("Black", new Position("e3"));
+        var chessBoard = InitializeCustomBoard((bishop, new Position("c1")), (blackPawn, new Position("e3")));
+        var targetPosition = new Position("e3"); // Capture at e3
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -77,10 +77,10 @@ public class BishopTests : TestHelper
     public void Bishop_IsValidMove_ShouldRejectMoveToOccupiedSquareBySameColor()
     {
         // Arrange
-        var bishop = new Bishop("White", (7, 2));
-        var whitePawn = new Pawn("White", (5, 4));
-        var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (whitePawn, (5, 4)));
-        var targetPosition = (5, 4); // Attempt to move to (5, 4)
+        var bishop = new Bishop("White", new Position("c1"));
+        var whitePawn = new Pawn("White", new Position("e3"));
+        var chessBoard = InitializeCustomBoard((bishop, new Position("c1")), (whitePawn, new Position("e3")));
+        var targetPosition = new Position("e3"); // Attempt to move to e3
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -98,9 +98,9 @@ public class BishopTests : TestHelper
     public void Bishop_IsValidMove_ShouldRejectMoveOutOfBounds()
     {
         // Arrange
-        var bishop = new Bishop("White", (7, 2));
-        var chessBoard = InitializeCustomBoard((bishop, (7, 2)));
-        var targetPosition = (8, 3); // Out of bounds position
+        var bishop = new Bishop("White", new Position("c1"));
+        var chessBoard = InitializeCustomBoard((bishop, new Position("c1")));
+        var targetPosition = new Position("i5"); // Out of bounds position
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -115,10 +115,10 @@ public class BishopTests : TestHelper
     public void Bishop_IsValidMove_ShouldRejectMoveIfPathIsNotClear()
     {
         // Arrange
-        var bishop = new Bishop("White", (7, 2));
-        var blockingPawn = new Pawn("White", (6, 3));
-        var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (blockingPawn, (6, 3)));
-        var targetPosition = (5, 4); // Attempt to move to (5, 4)
+        var bishop = new Bishop("White", new Position("c1"));
+        var blockingPawn = new Pawn("White", new Position("d2"));
+        var chessBoard = InitializeCustomBoard((bishop, new Position("c1")), (blockingPawn, new Position("d2")));
+        var targetPosition = new Position("e3"); // Attempt to move to e3
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -136,10 +136,10 @@ public class BishopTests : TestHelper
     public void Bishop_IsValidMove_ShouldRejectMoveThroughOpponentPiece()
     {
         // Arrange
-        var bishop = new Bishop("White", (7, 2));
-        var blackKnight = new Knight("Black", (6, 3));
-        var chessBoard = InitializeCustomBoard((bishop, (7, 2)), (blackKnight, (6, 3)));
-        var targetPosition = (5, 4); // Attempt to move to (5, 4)
+        var bishop = new Bishop("White", new Position("c1"));
+        var blackKnight = new Knight("Black", new Position("d2"));
+        var chessBoard = InitializeCustomBoard((bishop, new Position("c1")), (blackKnight, new Position("d2")));
+        var targetPosition = new Position("e3"); // Attempt to move to e3
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)
@@ -153,3 +153,4 @@ public class BishopTests : TestHelper
         Assert.False(isValid, "The bishop should not be able to move through an opponent's piece.");
     }
 }
+
