@@ -1,3 +1,5 @@
+// File: ChessMate.Tests/GameContextBuilder.cs
+
 using ChessMate.Models;
 using ChessMate.Services;
 using Moq;
@@ -7,28 +9,24 @@ namespace ChessMate.Tests;
 public class GameContextBuilder
 {
     private readonly Mock<IGameContext> _gameContextMock = new();
-    private readonly Mock<IStateService> _stateServiceMock = new();
+    private readonly Mock<StateService> _stateServiceMock;
     private IChessBoard _board;
     private string _currentPlayer;
-    private List<string> _moveLog;
+    public IChessBoard Board => _board;
+
+    // Expose the StateService mock for verification in tests
+    public Mock<StateService> StateServiceMock => _stateServiceMock;
 
     public GameContextBuilder()
     {
-        // Default setups
-        _stateServiceMock.SetupAllProperties();
+        // Initialize the state service partial mock with CallBase = true
+        _stateServiceMock = new Mock<StateService>() { CallBase = true };
 
         // Initialize the current player
         _currentPlayer = "White";
-        _stateServiceMock.Setup(s => s.CurrentPlayer).Returns(() => _currentPlayer);
-        _stateServiceMock.Setup(s => s.SwitchPlayer())
-            .Callback(() => _currentPlayer = _currentPlayer == "White" ? "Black" : "White");
-        _stateServiceMock.Setup(s => s.SetPlayer(It.IsAny<string>()))
-            .Callback<string>(player => _currentPlayer = player);
+        _stateServiceMock.Object.SetPlayer(_currentPlayer);
 
-        // Initialize MoveLog
-        _moveLog = new List<string>();
-        _stateServiceMock.Setup(s => s.MoveLog).Returns(() => _moveLog);
-
+        // Initialize the board
         _board = new ChessBoard();
     }
 
@@ -38,19 +36,15 @@ public class GameContextBuilder
         return this;
     }
 
-    // Invokes the mocked SetPlayer method.
-    // Triggers the callback set up in the constructor.
-    // Updates _currentPlayer to the given player value.
-    // Ensures that CurrentPlayer reflects the updated value due to the setup in the constructor.
     public GameContextBuilder WithCurrentPlayer(string player)
     {
+        _currentPlayer = player;
         _stateServiceMock.Object.SetPlayer(player);
         return this;
     }
 
     public GameContextBuilder WithEnPassantTarget(Position target, ChessPiece piece)
     {
-        _stateServiceMock.Setup(s => s.EnPassantTarget).Returns(target);
         _stateServiceMock.Object.SetEnPassantTarget(target, piece);
         return this;
     }
@@ -70,27 +64,23 @@ public class GameContextBuilder
     // Optional: Method to set custom MoveLog for testing purposes
     public GameContextBuilder WithMoveLog(List<string> moveLog)
     {
-        _moveLog = moveLog;
-        _stateServiceMock.Setup(s => s.MoveLog).Returns(() => _moveLog);
+        _stateServiceMock.Object.MoveLog.Clear();
+        _stateServiceMock.Object.MoveLog.AddRange(moveLog);
         return this;
     }
 
-    // Method to verify interactions with IStateService mock
-    public void VerifyStateService(Action<Mock<IStateService>> verifyAction)
+    // Method to configure the StateService mock for custom setups or verifications
+    public GameContextBuilder ConfigureStateService(Action<Mock<StateService>> configure)
     {
-        verifyAction(_stateServiceMock);
+        configure(_stateServiceMock);
+        return this;
     }
 
     public IGameContext Build()
     {
         _gameContextMock.Setup(c => c.Board).Returns(_board);
         _gameContextMock.Setup(c => c.State).Returns(_stateServiceMock.Object);
-
         return _gameContextMock.Object;
     }
+
 }
-
-
-
-
-

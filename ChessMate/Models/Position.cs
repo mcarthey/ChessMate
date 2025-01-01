@@ -1,5 +1,12 @@
 namespace ChessMate.Models;
 
+// Position mapping:
+// Row indices 0 to 7 correspond to ranks '1' to '8' (from White's perspective)
+// Column indices 0 to 7 correspond to files 'a' to 'h'
+
+// Example:
+// 'a1' -> (Row 0, Col 0)
+// 'h8' -> (Row 7, Col 7)
 public readonly struct Position : IEquatable<Position>
 {
     public int Row { get; }

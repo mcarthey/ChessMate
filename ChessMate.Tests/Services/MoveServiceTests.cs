@@ -10,15 +10,23 @@ namespace ChessMate.Tests.Services;
 
 public class MoveServiceTests : TestHelper
 {
-    private readonly Mock<IChessBoard> _mockChessBoard;
-    private readonly Mock<IMoveValidatorService> _mockMoveValidator;
-    private readonly Mock<IGameStateEvaluator> _mockGameStateEvaluator;
+    private readonly ITestOutputHelper _output;
 
     public MoveServiceTests(ITestOutputHelper output) : base(output)
     {
-        _mockChessBoard = new Mock<IChessBoard>();
-        _mockMoveValidator = new Mock<IMoveValidatorService>();
-        _mockGameStateEvaluator = new Mock<IGameStateEvaluator>();
+        _output = output;
+    }
+
+    /// <summary>
+    /// Helper method to initialize kings on the board.
+    /// </summary>
+    private void InitializeKings(GameContextBuilder builder)
+    {
+        var whiteKing = new King("White", new Position("e1"));
+        var blackKing = new King("Black", new Position("e8"));
+
+        builder.Board.SetPieceAt(new Position("e1"), whiteKing);
+        builder.Board.SetPieceAt(new Position("e8"), blackKing);
     }
 
     [Fact]
@@ -27,14 +35,13 @@ public class MoveServiceTests : TestHelper
         // Arrange
         var from = new Position("a2");
         var to = new Position("a3");
-        _mockChessBoard.Setup(board => board.GetPieceAt(from)).Returns((ChessPiece)null);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("White")
-            .Build();
+        var gameContextBuilder = new GameContextBuilder();
+        InitializeKings(gameContextBuilder); // Initialize kings
+        var gameContext = gameContextBuilder.Build();
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
+        var mockMoveValidator = new Mock<IMoveValidatorService>().Object;
+        var moveService = new MoveService(gameContext, mockMoveValidator);
 
         // Act
         var result = moveService.TryMove(from, to);
@@ -50,14 +57,15 @@ public class MoveServiceTests : TestHelper
         var from = new Position("a2");
         var to = new Position("a3");
         var whitePawn = new Pawn("White", from);
-        _mockChessBoard.Setup(board => board.GetPieceAt(from)).Returns(whitePawn);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("Black")
-            .Build();
+        var gameContextBuilder = new GameContextBuilder()
+            .WithCurrentPlayer("Black");
+        InitializeKings(gameContextBuilder); // Initialize kings
+        gameContextBuilder.Board.SetPieceAt(from, whitePawn);
+        var gameContext = gameContextBuilder.Build();
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
+        var mockMoveValidator = new Mock<IMoveValidatorService>().Object;
+        var moveService = new MoveService(gameContext, mockMoveValidator);
 
         // Act
         var result = moveService.TryMove(from, to);
@@ -73,18 +81,16 @@ public class MoveServiceTests : TestHelper
         var from = new Position("a2");
         var to = new Position("b3"); // Invalid move for a pawn moving forward
         var whitePawn = new Pawn("White", from);
-        _mockChessBoard.Setup(board => board.GetPieceAt(from)).Returns(whitePawn);
-        _mockChessBoard.Setup(board => board.GetPieceAt(to)).Returns((ChessPiece)null);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("White")
-            .Build();
+        var gameContextBuilder = new GameContextBuilder();
+        InitializeKings(gameContextBuilder); // Initialize kings
+        gameContextBuilder.Board.SetPieceAt(from, whitePawn);
+        var gameContext = gameContextBuilder.Build();
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
+        var mockMoveValidator = new Mock<IMoveValidatorService>();
+        mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Returns(false);
 
-        // Mock the pawn's IsValidMove to return false
-        _mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Returns(false);
+        var moveService = new MoveService(gameContext, mockMoveValidator.Object);
 
         // Act
         var result = moveService.TryMove(from, to);
@@ -101,15 +107,16 @@ public class MoveServiceTests : TestHelper
         var to = new Position("a3");
         var whitePawn = new Pawn("White", from);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("White")
-            .Build();
+        var gameContextBuilder = new GameContextBuilder();
+        InitializeKings(gameContextBuilder); // Initialize kings
+        gameContextBuilder.Board.SetPieceAt(from, whitePawn);
+        var gameContext = gameContextBuilder.Build();
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
+        var mockMoveValidator = new Mock<IMoveValidatorService>();
+        mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext))
+            .Throws(new Exception("Test exception"));
 
-        // Mock the pawn's IsValidMove to throw an exception
-        _mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Throws(new Exception("Test exception"));
+        var moveService = new MoveService(gameContext, mockMoveValidator.Object);
 
         // Act
         var result = moveService.TryMove(from, to);
@@ -126,27 +133,23 @@ public class MoveServiceTests : TestHelper
         var to = new Position("a3");
         var whitePawn = new Pawn("White", from);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("White")
-            .Build();
+        var gameContextBuilder = new GameContextBuilder();
+        InitializeKings(gameContextBuilder); // Initialize kings
+        gameContextBuilder.Board.SetPieceAt(from, whitePawn);
+        var gameContext = gameContextBuilder.Build();
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
+        var mockMoveValidator = new Mock<IMoveValidatorService>();
+        mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Returns(true);
 
-        // Set up the board
-        _mockChessBoard.Setup(board => board.GetPieceAt(from)).Returns(whitePawn);
-        _mockChessBoard.Setup(board => board.GetPieceAt(to)).Returns((ChessPiece)null);
-
-        // Mock IsValidMove to return true
-        _mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Returns(true);
+        var moveService = new MoveService(gameContext, mockMoveValidator.Object);
 
         // Act
         var result = moveService.TryMove(from, to);
 
         // Assert
         Assert.True(result);
-        _mockChessBoard.Verify(board => board.SetPieceAt(to, whitePawn), Times.Once);
-        _mockChessBoard.Verify(board => board.RemovePieceAt(from), Times.Once);
+        Assert.Null(gameContext.Board.GetPieceAt(from));
+        Assert.Equal(whitePawn, gameContext.Board.GetPieceAt(to));
         Assert.Equal(to, whitePawn.Position);
     }
 
@@ -154,33 +157,22 @@ public class MoveServiceTests : TestHelper
     public void TryMove_MoveLeavesKingInCheck_ReturnsFalse()
     {
         // Arrange
-        var from = new Position("e5");
-        var to = new Position("e6");
-        var whiteKing = new King("White", new Position("e1"));
+        var from = new Position("e2");
+        var to = new Position("e3");
         var whitePawn = new Pawn("White", from);
-        var blackRook = new Rook("Black", new Position("a1"));
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("White")
-            .Build();
+        var gameContextBuilder = new GameContextBuilder();
+        InitializeKings(gameContextBuilder); // Initialize kings
+        gameContextBuilder.Board.SetPieceAt(from, whitePawn);
+        var gameContext = gameContextBuilder.Build();
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
+        var mockStateService = gameContextBuilder.StateServiceMock;
+        mockStateService.Setup(s => s.WouldMoveCauseSelfCheck(whitePawn, from, to, gameContext)).Returns(true);
 
-        // Set up the board
-        _mockChessBoard.Setup(board => board.GetPieceAt(from)).Returns(whitePawn);
-        _mockChessBoard.Setup(board => board.GetPieceAt(to)).Returns((ChessPiece)null);
-        _mockChessBoard.Setup(board => board.GetPieceAt(whiteKing.Position)).Returns(whiteKing);
-        _mockChessBoard.Setup(board => board.FindKing("White")).Returns(whiteKing.Position);
+        var mockMoveValidator = new Mock<IMoveValidatorService>();
+        mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Returns(true);
 
-        // Add opponent piece that can attack the king after the move
-        _mockChessBoard.Setup(board => board.GetAllPieces()).Returns(new List<ChessPiece> { whitePawn, whiteKing, blackRook });
-
-        // Mock IsValidMove to return true for pawn
-        _mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Returns(true);
-
-        // Mock the black rook's IsValidMove to return true when targeting the king's position
-        _mockGameStateEvaluator.Setup(e => e.WouldMoveCauseSelfCheck(whitePawn, from, to, gameContext)).Returns(true);
+        var moveService = new MoveService(gameContext, mockMoveValidator.Object);
 
         // Act
         var result = moveService.TryMove(from, to);
@@ -197,19 +189,15 @@ public class MoveServiceTests : TestHelper
         var to = new Position("a3");
         var whitePawn = new Pawn("White", from);
 
-        var gameContextBuilder = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("White");
-
+        var gameContextBuilder = new GameContextBuilder();
+        InitializeKings(gameContextBuilder); // Initialize kings
+        gameContextBuilder.Board.SetPieceAt(from, whitePawn);
         var gameContext = gameContextBuilder.Build();
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
+        var mockMoveValidator = new Mock<IMoveValidatorService>();
+        mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Returns(true);
 
-        _mockChessBoard.Setup(board => board.GetPieceAt(from)).Returns(whitePawn);
-        _mockChessBoard.Setup(board => board.GetPieceAt(to)).Returns((ChessPiece)null);
-
-        // Mock IsValidMove to return true
-        _mockMoveValidator.Setup(v => v.IsValidMove(whitePawn, to, gameContext)).Returns(true);
+        var moveService = new MoveService(gameContext, mockMoveValidator.Object);
 
         // Act
         var result = moveService.TryMove(from, to);
@@ -217,8 +205,11 @@ public class MoveServiceTests : TestHelper
         // Assert
         Assert.True(result);
 
-        // Verify that the player was switched
-        gameContextBuilder.VerifyStateService(s => s.Verify(ss => ss.SwitchPlayer(), Times.Once));
+        // Verify that the CurrentPlayer has switched
+        Assert.Equal("Black", gameContext.State.CurrentPlayer);
+
+        // Verify that game state is updated
+        Assert.Contains("White Pawn from a2 to a3", gameContext.State.MoveLog);
     }
 
     [Fact]
@@ -226,38 +217,28 @@ public class MoveServiceTests : TestHelper
     {
         // Arrange
         var from = new Position("a1");
-        var to = new Position("h1");
-        var blackKing = new King("Black", new Position("e8"));
+        var to = new Position("a8");
         var whiteRook = new Rook("White", from);
+        var blackKing = new King("Black", to);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("White")
-            .WithCheck(false)
-            .WithCheckmate(false)
-            .Build();
+        var gameContextBuilder = new GameContextBuilder();
+        InitializeKings(gameContextBuilder); // Initialize kings
+        gameContextBuilder.Board.SetPieceAt(from, whiteRook);
+        gameContextBuilder.Board.SetPieceAt(to, blackKing);
+        var gameContext = gameContextBuilder.Build();
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
+        var mockMoveValidator = new Mock<IMoveValidatorService>();
+        mockMoveValidator.Setup(v => v.IsValidMove(whiteRook, to, gameContext)).Returns(true);
 
-        _mockChessBoard.Setup(board => board.GetPieceAt(from)).Returns(whiteRook);
-        _mockChessBoard.Setup(board => board.GetPieceAt(to)).Returns((ChessPiece)null);
-        _mockChessBoard.Setup(board => board.GetPieceAt(blackKing.Position)).Returns(blackKing);
-        _mockChessBoard.Setup(board => board.FindKing("Black")).Returns(blackKing.Position);
-
-        // Mock IsValidMove to return true
-        _mockMoveValidator.Setup(v => v.IsValidMove(whiteRook, to, gameContext)).Returns(true);
-
-        // Mock opponent pieces
-        _mockChessBoard.Setup(board => board.GetAllPieces()).Returns(new List<ChessPiece> { blackKing, whiteRook });
-
-        // Mock that after the move, rook can attack the black king
-        _mockGameStateEvaluator.Setup(e => e.IsKingInCheck("Black", gameContext)).Returns(true);
+        var moveService = new MoveService(gameContext, mockMoveValidator.Object);
 
         // Act
         var result = moveService.TryMove(from, to);
 
         // Assert
         Assert.True(result);
+
+        // Verify that IsCheck is true
         Assert.True(gameContext.State.IsCheck);
     }
 
@@ -265,47 +246,31 @@ public class MoveServiceTests : TestHelper
     public void TryMove_OpponentHasNoLegalMoves_SetsIsCheckmate()
     {
         // Arrange
-        var from = new Position("a1");
-        var to = new Position("a2");
-        var blackKing = new King("Black", new Position("e8"));
+        var from = new Position("h7");
+        var to = new Position("h8");
+        var whiteQueen = new Queen("White", from);
+        var blackKing = new King("Black", new Position("g8"));
 
-        // Only pieces on the board are white rook and black king
-        var whiteRook = new Rook("White", from);
+        var gameContextBuilder = new GameContextBuilder();
+        InitializeKings(gameContextBuilder); // Initialize kings
+        gameContextBuilder.Board.SetPieceAt(from, whiteQueen);
+        gameContextBuilder.Board.SetPieceAt(blackKing.Position, blackKing);
+        var gameContext = gameContextBuilder.Build();
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(_mockChessBoard.Object)
-            .WithCurrentPlayer("White")
-            .WithCheck(false)
-            .WithCheckmate(false)
-            .Build();
+        var mockMoveValidator = new Mock<IMoveValidatorService>();
+        mockMoveValidator.Setup(v => v.IsValidMove(whiteQueen, to, gameContext)).Returns(true);
 
-        var moveService = new MoveService(gameContext, _mockMoveValidator.Object, _mockGameStateEvaluator.Object);
-
-        _mockChessBoard.Setup(board => board.GetPieceAt(from)).Returns(whiteRook);
-        _mockChessBoard.Setup(board => board.GetPieceAt(to)).Returns((ChessPiece)null);
-        _mockChessBoard.Setup(board => board.FindKing("Black")).Returns(blackKing.Position);
-        _mockChessBoard.Setup(board => board.GetPieceAt(blackKing.Position)).Returns(blackKing);
-
-        // Mock IsValidMove to return true
-        _mockMoveValidator.Setup(v => v.IsValidMove(whiteRook, to, gameContext)).Returns(true);
-
-        // Mock opponent pieces
-        _mockChessBoard.SetupSequence(board => board.GetAllPieces())
-            .Returns(new List<ChessPiece> { whiteRook, blackKing }) // Before move
-            .Returns(new List<ChessPiece> { whiteRook, blackKing }); // After move
-
-        // Mock that black king has no legal moves
-        _mockGameStateEvaluator.Setup(e => e.HasLegalMoves("Black", gameContext)).Returns(false);
+        var moveService = new MoveService(gameContext, mockMoveValidator.Object);
 
         // Act
         var result = moveService.TryMove(from, to);
 
         // Assert
         Assert.True(result);
+
+        // Verify that IsCheck and IsCheckmate are true
+        Assert.True(gameContext.State.IsCheck);
         Assert.True(gameContext.State.IsCheckmate);
     }
 }
-
-
-
 

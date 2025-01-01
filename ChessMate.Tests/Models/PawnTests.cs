@@ -175,8 +175,11 @@ public class PawnTests : TestHelper
         PrintBoard(chessBoard);
         var targetPosition = new Position(-1, 0); // Move out of bounds
 
-        // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => pawn.IsValidMove(targetPosition, gameContext));
+        // Act
+        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+
+        // Assert
+        Assert.False(isValid, "The pawn should not be able to move out of bounds.");
     }
 
     [Fact]
@@ -227,8 +230,7 @@ public class PawnTests : TestHelper
 
         // Assert
         // Verify that SetEnPassantTarget was called with correct parameters
-        gameContextBuilder.VerifyStateService(s =>
-            s.Verify(ss => ss.SetEnPassantTarget(expectedEnPassantTarget, pawn), Times.Exactly(2)));
+        gameContextBuilder.StateServiceMock.Verify(s => s.SetEnPassantTarget(expectedEnPassantTarget, pawn), Times.Exactly(2));
 
         // Optionally, check the EnPassantTarget property
         var enPassantTarget = gameContext.State.EnPassantTarget;

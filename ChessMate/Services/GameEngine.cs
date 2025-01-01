@@ -1,21 +1,22 @@
 ﻿using ChessMate.Models;
-using ChessMate.Utilities;
 
 namespace ChessMate.Services;
 
 public class GameEngine : IGameEngine
 {
-    public IChessBoard Board { get; set; }
-    public IStateService State { get; set; }
+    public IGameContext Context { get; set; }
     public IMoveService Move { get; set; }
 
-    public GameEngine(IChessBoard board, IStateService state, IMoveService move)
+    public IChessBoard Board => Context.Board;
+    public IStateService State => Context.State;
+
+    public GameEngine(IGameContext context, IMoveService move)
     {
-        Board = board;
-        State = state;
+        Context = context;
         Move = move;
 
         Board.InitializeBoard();
+        State.UpdateAttackMaps(Context);
     }
 
     public bool ProcessMove(Position from, Position to)

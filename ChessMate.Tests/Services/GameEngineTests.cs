@@ -2,7 +2,6 @@
 
 using ChessMate.Models;
 using ChessMate.Services;
-using ChessMate.Utilities;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,15 +10,23 @@ namespace ChessMate.Tests.Services;
 
 public class GameEngineTests : TestHelper
 {
+    private readonly Mock<IGameContext> _mockGameContext;
     private readonly Mock<IChessBoard> _mockChessBoard;
+    private readonly Mock<IStateService> _mockStateService;
     private readonly Mock<IMoveService> _mockMoveService;
     private readonly GameEngine _gameEngine;
 
     public GameEngineTests(ITestOutputHelper output) : base(output)
     {
+        _mockGameContext = new Mock<IGameContext>();
         _mockChessBoard = new Mock<IChessBoard>();
+        _mockStateService = new Mock<IStateService>();
         _mockMoveService = new Mock<IMoveService>();
-        _gameEngine = new GameEngine(_mockChessBoard.Object, StateService, _mockMoveService.Object);
+
+        _mockGameContext.Setup(context => context.Board).Returns(_mockChessBoard.Object);
+        _mockGameContext.Setup(context => context.State).Returns(_mockStateService.Object);
+
+        _gameEngine = new GameEngine(_mockGameContext.Object, _mockMoveService.Object);
     }
 
     [Fact]
@@ -27,10 +34,10 @@ public class GameEngineTests : TestHelper
     {
         // Arrange & Act
         // Use the _gameEngine instance created in the constructor
-        // var gameEngine = new GameEngine(_mockChessBoard.Object, StateService, _mockMoveService.Object);
 
         // Assert
         _mockChessBoard.Verify(board => board.InitializeBoard(), Times.Once);
+        _mockStateService.Verify(state => state.UpdateAttackMaps(_mockGameContext.Object), Times.Once);
         Assert.NotNull(_gameEngine.Board);
         Assert.NotNull(_gameEngine.State);
         Assert.NotNull(_gameEngine.Move);
@@ -90,7 +97,7 @@ public class GameEngineTests : TestHelper
     public void GameEngine_GetCurrentPlayer_ShouldReturnCurrentPlayer()
     {
         // Arrange
-        StateService.SetPlayer("White");
+        _mockStateService.Setup(state => state.CurrentPlayer).Returns("White");
 
         // Act
         var currentPlayer = _gameEngine.GetCurrentPlayer();
@@ -117,7 +124,8 @@ public class GameEngineTests : TestHelper
         CustomOutput.WriteLine("Test: GameEngine_InitializeBoard_ShouldCallInitializeBoardOnChessBoard");
         CustomOutput.Flush();
     }
-
 }
+
+
 
 

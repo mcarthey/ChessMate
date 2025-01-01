@@ -18,7 +18,6 @@ builder.Services.AddScoped<IStateService, StateService>();
 builder.Services.AddScoped<IMoveService, MoveService>();
 builder.Services.AddScoped<IGameEngine, GameEngine>();
 builder.Services.AddScoped<IGameContext, GameContext>();
-builder.Services.AddScoped<IGameStateEvaluator, GameStateEvaluator>();
 builder.Services.AddScoped<IMoveValidatorService, MoveValidatorService>();
 
 var app = builder.Build();

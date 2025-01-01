@@ -162,8 +162,11 @@ public class KnightTests : TestHelper
 
         var targetPosition = new Position(-2, -1); // Out of bounds
 
-        // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => knight.IsValidMove(targetPosition, gameContext));
+        // Act
+        bool isValid = knight.IsValidMove(targetPosition, gameContext);
+
+        // Assert
+        Assert.False(isValid, "The knight should not be able to move out of bounds.");
     }
 }
 

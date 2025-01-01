@@ -1,3 +1,5 @@
+// File: ChessMate/Services/IStateService.cs
+
 using ChessMate.Models;
 
 namespace ChessMate.Services
@@ -18,6 +20,9 @@ namespace ChessMate.Services
 
         Position? EnPassantTarget { get; }
 
+        HashSet<Position> WhiteAttacks { get; }
+        HashSet<Position> BlackAttacks { get; }
+
         void SwitchPlayer();
         void SetPlayer(string player);
 
@@ -26,6 +31,11 @@ namespace ChessMate.Services
 
         void ResetState();
 
-        void UpdateGameStateAfterMove(ChessPiece piece, Position from, Position to, IGameContext context, IGameStateEvaluator gameStateEvaluator);
+        void UpdateAttackMaps(IGameContext context);
+        void UpdateGameStateAfterMove(ChessPiece piece, Position from, Position to, IGameContext context);
+
+        bool WouldMoveCauseSelfCheck(ChessPiece piece, Position from, Position to, IGameContext context);
+        bool IsKingInCheck(string color, IGameContext context);
+        bool HasLegalMoves(string color, IGameContext context);
     }
 }

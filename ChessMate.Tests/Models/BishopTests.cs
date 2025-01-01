@@ -100,7 +100,7 @@ public class BishopTests : TestHelper
         // Arrange
         var bishop = new Bishop("White", new Position("c1"));
         var chessBoard = InitializeCustomBoard((bishop, new Position("c1")));
-        var targetPosition = new Position("i5"); // Out of bounds position
+        var targetPosition = new Position(4, -1); // Out of bounds position
 
         var gameContext = new GameContextBuilder()
             .WithBoard(chessBoard)

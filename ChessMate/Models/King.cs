@@ -30,7 +30,15 @@ public class King : ChessPiece
         if (isOneSquareMove)
         {
             var targetPiece = board.GetPieceAt(targetPosition);
-            return targetPiece == null || targetPiece.Color != Color;
+            if (targetPiece == null || targetPiece.Color != Color)
+            {
+                // Check if the move would result in the king being in check
+                if (WouldMoveCauseSelfCheck(targetPosition, context))
+                {
+                    return false;
+                }
+                return true;
+            }
         }
 
         // Castling logic (simplified)
@@ -43,6 +51,12 @@ public class King : ChessPiece
         }
 
         return false; // Invalid move
+    }
+
+    private bool WouldMoveCauseSelfCheck(Position targetPosition, IGameContext context)
+    {
+        var opponentAttacks = Color == "White" ? context.State.BlackAttacks : context.State.WhiteAttacks;
+        return opponentAttacks.Contains(targetPosition);
     }
 
     // Optional: Override OnMoved if king has specific post-move behavior

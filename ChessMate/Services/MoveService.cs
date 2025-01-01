@@ -1,4 +1,6 @@
-﻿using ChessMate.Models;
+﻿// File: ChessMate/Services/MoveService.cs
+
+using ChessMate.Models;
 
 namespace ChessMate.Services
 {
@@ -6,16 +8,13 @@ namespace ChessMate.Services
     {
         private readonly IGameContext _context;
         private readonly IMoveValidatorService _moveValidator;
-        private readonly IGameStateEvaluator _gameStateEvaluator;
 
         public MoveService(
             IGameContext context,
-            IMoveValidatorService moveValidator,
-            IGameStateEvaluator gameStateEvaluator)
+            IMoveValidatorService moveValidator)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _moveValidator = moveValidator ?? throw new ArgumentNullException(nameof(moveValidator));
-            _gameStateEvaluator = gameStateEvaluator ?? throw new ArgumentNullException(nameof(gameStateEvaluator));
         }
 
         public bool TryMove(Position from, Position to)
@@ -42,14 +41,14 @@ namespace ChessMate.Services
                 return false;
 
             // Check if the move would result in self-check
-            if (_gameStateEvaluator.WouldMoveCauseSelfCheck(piece, from, to, _context))
+            if (state.WouldMoveCauseSelfCheck(piece, from, to, _context))
                 return false;
 
             // Perform the move
             ExecuteMove(piece, from, to);
 
             // Update game state
-            state.UpdateGameStateAfterMove(piece, from, to, _context, _gameStateEvaluator);
+            state.UpdateGameStateAfterMove(piece, from, to, _context);
 
             return true;
         }
@@ -67,3 +66,8 @@ namespace ChessMate.Services
         }
     }
 }
+
+
+
+
+

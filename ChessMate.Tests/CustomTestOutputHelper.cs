@@ -12,6 +12,11 @@ public class CustomTestOutputHelper : ITestOutputHelper
         _output = output;
     }
 
+    public void Write(string message)
+    {
+        _buffer.Write(message);
+    }
+
     public void WriteLine(string message)
     {
         _buffer.WriteLine(message);
@@ -22,13 +27,12 @@ public class CustomTestOutputHelper : ITestOutputHelper
         _buffer.WriteLine(format, args);
     }
 
-    public void Write(string message)
-    {
-        _buffer.Write(message);
-    }
-
     public void Flush()
     {
+        // Write the buffered content to the output
         _output.WriteLine(_buffer.ToString());
+
+        // Clear the buffer
+        _buffer.GetStringBuilder().Clear();
     }
 }

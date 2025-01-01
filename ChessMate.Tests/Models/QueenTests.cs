@@ -167,8 +167,7 @@ public class QueenTests : TestHelper
 
         // Assert
         Assert.NotEqual(targetPosition, queen.Position); // Position should not be updated
-        gameContextBuilder.VerifyStateService(s =>
-            s.Verify(ss => ss.SwitchPlayer(), Times.Never())); // Player should not be switched
+        gameContextBuilder.StateServiceMock.Verify(s => s.SwitchPlayer(), Times.Never()); // Player should not be switched
     }
 }
 
