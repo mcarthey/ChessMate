@@ -7,8 +7,8 @@ namespace ChessMate.Services;
 public class StateService : IStateService
 {
     public string CurrentPlayer { get; private set; } = "White";
-    public bool IsCheck { get; set; }
-    public bool IsCheckmate { get; set; }
+    public virtual bool IsCheck { get; set; }
+    public virtual bool IsCheckmate { get; set; }
     public Position? EnPassantTarget { get; private set; } // Track en passant target
 
     // Castling flags
@@ -93,17 +93,18 @@ public class StateService : IStateService
         // Log the move
         MoveLog.Add($"{piece.Color} {piece.GetType().Name} from {from} to {to}");
 
-        // Switch player after the move is completed
+        // Update attack maps based on the new board state
+        UpdateAttackMaps(context);
+
+        // Switch player after updating the attack maps
         SwitchPlayer();
 
         // Update check and checkmate status
         string opponentColor = CurrentPlayer;
         IsCheck = IsKingInCheck(opponentColor, context);
         IsCheckmate = IsCheck && !HasLegalMoves(opponentColor, context);
-
-        // Update attack maps
-        UpdateAttackMaps(context);
     }
+
 
     public virtual void UpdateAttackMaps(IGameContext context)
     {
@@ -142,7 +143,7 @@ public class StateService : IStateService
     }
 
 
-    public bool WouldMoveCauseSelfCheck(ChessPiece piece, Position from, Position to, IGameContext context)
+    public virtual bool WouldMoveCauseSelfCheck(ChessPiece piece, Position from, Position to, IGameContext context)
     {
         var board = context.Board;
         var originalPosition = piece.Position;
@@ -173,7 +174,7 @@ public class StateService : IStateService
     /// <summary>
     /// Determines if the king of the specified color is in check.
     /// </summary>
-    public bool IsKingInCheck(string color, IGameContext context)
+    public virtual bool IsKingInCheck(string color, IGameContext context)
     {
         var board = context.Board;
         var kingPosition = board.FindKing(color);
