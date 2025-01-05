@@ -63,12 +63,12 @@ public class Pawn : ChessPiece
     /// <summary>
     /// Handles updates to the state after a successful move.
     /// </summary>
-    public override void OnMoved(Position to, IChessBoard board, IStateService state)
+    public override void OnMoved(Position from, Position to, IChessBoard board, IStateService state)
     {
         // En passant eligibility
-        if (Math.Abs(to.Row - Position.Row) == 2) // Moved two squares
+        if (Math.Abs(from.Row - to.Row) == 2) // Moved two squares
         {
-            var enPassantTargetRow = (Position.Row + to.Row) / 2;
+            var enPassantTargetRow = (from.Row + to.Row) / 2;
             var enPassantTarget = new Position(enPassantTargetRow, to.Col);
             state.SetEnPassantTarget(enPassantTarget, this);
         }
@@ -92,6 +92,6 @@ public class Pawn : ChessPiece
         }
 
         // Call base method to switch player and update game state
-        base.OnMoved(to, board, state);
+        base.OnMoved(from, to, board, state);
     }
 }

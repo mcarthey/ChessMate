@@ -79,10 +79,10 @@ namespace ChessMate.Services
         {
             _board.RemovePieceAt(from);
             _board.SetPieceAt(to, piece);
-            piece.Position = to;
+            //piece.Position = to;
 
             // Execute any post-move actions (e.g., pawn promotion)
-            piece.OnMoved(to, _board, _stateService);
+            piece.OnMoved(from, to, _board, _stateService);
         }
     }
 }

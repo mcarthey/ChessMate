@@ -189,7 +189,7 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
 
             // Act
-            pawn.OnMoved(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
+            pawn.OnMoved(pawn.Position, targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
             // Assert
             _mockStateService.Verify(s => s.SetEnPassantTarget(expectedEnPassantTarget, pawn), Times.Once);
@@ -207,7 +207,7 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
 
             // Act
-            pawn.OnMoved(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
+            pawn.OnMoved(pawn.Position, targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
             // Assert
             _mockStateService.Verify(s => s.ResetEnPassantTarget(), Times.Once);
@@ -226,7 +226,7 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.SetPieceAt(targetPosition, It.IsAny<Queen>())).Verifiable();
 
             // Act
-            pawn.OnMoved(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
+            pawn.OnMoved(pawn.Position, targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
             // Assert
             _mockChessBoard.Verify(board => board.SetPieceAt(targetPosition, It.Is<Queen>(q =>

@@ -34,7 +34,7 @@ public abstract class ChessPiece
     /// Handles updates to the piece after a successful move.
     /// Can be overridden in derived classes.
     /// </summary>
-    public virtual void OnMoved(Position to, IChessBoard board, IStateService stateService)
+    public virtual void OnMoved(Position from, Position to, IChessBoard board, IStateService stateService)
     {
         // Default implementation does nothing
         // Derived classes can override to implement specific behavior (e.g., pawn promotion)
