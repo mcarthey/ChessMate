@@ -1,264 +1,237 @@
+// File: ChessMate.Tests/Models/PawnTests.cs
+
 using ChessMate.Models;
+using ChessMate.Services;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace ChessMate.Tests.Models;
-
-public class PawnTests : TestHelper
+namespace ChessMate.Tests.Models
 {
-    public PawnTests(ITestOutputHelper output) : base(output)
+    public class PawnTests
     {
-    }
+        private readonly Mock<IChessBoard> _mockChessBoard;
+        private readonly Mock<IStateService> _mockStateService;
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldAllowSingleSquareMove()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e2"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
+        public PawnTests()
+        {
+            _mockChessBoard = new Mock<IChessBoard>();
+            _mockStateService = new Mock<IStateService>();
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
+        [Fact]
+        public void Pawn_IsValidMove_ShouldAllowSingleSquareMove()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e2"));
+            var targetPosition = new Position("e3"); // Move forward one square
 
-        var targetPosition = new Position("e3"); // Move forward one square
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
 
-        // Act
-        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+            // Act
+            bool isValid = pawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        // Assert
-        Assert.True(isValid, "The pawn should be able to move one square forward.");
-    }
+            // Assert
+            Assert.True(isValid, "The pawn should be able to move one square forward.");
+        }
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldAllowDoubleSquareMoveOnFirstMove()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e2"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
+        [Fact]
+        public void Pawn_IsValidMove_ShouldAllowDoubleSquareMoveOnFirstMove()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e2"));
+            var targetPosition = new Position("e4"); // Move forward two squares
+            var middlePosition = new Position("e3");
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(middlePosition)).Returns((ChessPiece)null);
 
-        var targetPosition = new Position("e4"); // Move forward two squares
+            // Act
+            bool isValid = pawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        // Act
-        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+            // Assert
+            Assert.True(isValid, "The pawn should be able to move two squares forward on its first move.");
+        }
 
-        // Assert
-        Assert.True(isValid, "The pawn should be able to move two squares forward on its first move.");
-    }
+        [Fact]
+        public void Pawn_IsValidMove_ShouldRejectDoubleSquareMoveAfterFirstMove()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e3"));
+            var targetPosition = new Position("e5"); // Attempt to move two squares forward
+            var middlePosition = new Position("e4");
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldRejectDoubleSquareMoveAfterFirstMove()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e3"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e3")));
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(middlePosition)).Returns((ChessPiece)null);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
+            // Act
+            bool isValid = pawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        var targetPosition = new Position("e5"); // Attempt to move two squares forward
+            // Assert
+            Assert.False(isValid, "The pawn should not be able to move two squares forward after its first move.");
+        }
 
-        // Act
-        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+        [Fact]
+        public void Pawn_IsValidMove_ShouldAllowDiagonalCapture()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e2"));
+            var opponentPawn = new Pawn("Black", new Position("f3"));
+            var targetPosition = new Position("f3"); // Capture diagonally
 
-        // Assert
-        Assert.False(isValid, "The pawn should not be able to move two squares forward after its first move.");
-    }
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns(opponentPawn);
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldAllowDiagonalCapture()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e2"));
-        var opponentPawn = new Pawn("Black", new Position("f3"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")), (opponentPawn, new Position("f3")));
+            // Act
+            bool isValid = pawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
+            // Assert
+            Assert.True(isValid, "The pawn should be able to capture an opponent's piece diagonally.");
+        }
 
-        var targetPosition = new Position("f3"); // Capture diagonally
+        [Fact]
+        public void Pawn_IsValidMove_ShouldRejectInvalidDiagonalMove()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e2"));
+            var targetPosition = new Position("f3"); // Diagonal move without capture
 
-        // Act
-        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
 
-        // Assert
-        Assert.True(isValid, "The pawn should be able to capture an opponent's piece diagonally.");
-    }
+            // Act
+            bool isValid = pawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldRejectInvalidDiagonalMove()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e2"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
+            // Assert
+            Assert.False(isValid, "The pawn should not be able to move diagonally without capturing.");
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
+        [Fact]
+        public void Pawn_IsValidMove_ShouldRejectBackwardMove()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e2"));
+            var targetPosition = new Position("e1"); // Move backward
 
-        var targetPosition = new Position("f3"); // Diagonal move without capture
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
 
-        // Act
-        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+            // Act
+            bool isValid = pawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        // Assert
-        Assert.False(isValid, "The pawn should not be able to move diagonally without capturing.");
-    }
+            // Assert
+            Assert.False(isValid, "The pawn should not be able to move backward.");
+        }
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldRejectBackwardMove()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e2"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
+        [Fact]
+        public void Pawn_IsValidMove_ShouldRejectMoveToOccupiedSquare()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e2"));
+            var blockingPawn = new Pawn("Black", new Position("e3"));
+            var targetPosition = new Position("e3"); // Move to occupied square
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns(blockingPawn);
 
-        var targetPosition = new Position("e1"); // Move backward
+            // Act
+            bool isValid = pawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        // Act
-        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+            // Assert
+            Assert.False(isValid, "The pawn should not be able to move forward to an occupied square.");
+        }
 
-        // Assert
-        Assert.False(isValid, "The pawn should not be able to move backward.");
-    }
+        [Fact]
+        public void Pawn_IsValidMove_ShouldRejectOutOfBoundsMove()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("a8"));
+            var targetPosition = new Position(-1, 0); // Move out of bounds
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldRejectMoveToOccupiedSquare()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e2"));
-        var blockingPawn = new Pawn("Black", new Position("e3"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")), (blockingPawn, new Position("e3")));
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Throws(new ArgumentOutOfRangeException());
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                pawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object));
+        }
 
-        var targetPosition = new Position("e3"); // Move to occupied square
+        [Fact]
+        public void Pawn_IsValidMove_ShouldAllowEnPassantCapture()
+        {
+            // Arrange
+            var whitePawn = new Pawn("White", new Position("e5"));
+            var blackPawn = new Pawn("Black", new Position("d5"));
+            var targetPosition = new Position("d6"); // En passant capture
 
-        // Act
-        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(whitePawn.Position)).Returns(whitePawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("d5"))).Returns(blackPawn);
 
-        // Assert
-        Assert.False(isValid, "The pawn should not be able to move forward to an occupied square.");
-    }
+            _mockStateService.Setup(state => state.EnPassantTarget).Returns(targetPosition);
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldRejectMoveOutOfBounds()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("a1"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("a1")));
+            // Act
+            bool isValid = whitePawn.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
+            // Assert
+            Assert.True(isValid, "The white pawn should be able to capture en passant.");
+        }
 
-        PrintBoard(chessBoard);
-        var targetPosition = new Position(-1, 0); // Move out of bounds
+        [Fact]
+        public void Pawn_OnMoved_ShouldSetEnPassantTarget()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e2"));
+            var targetPosition = new Position("e4"); // Double move forward
+            var expectedEnPassantTarget = new Position("e3");
 
-        // Act
-        bool isValid = pawn.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
 
-        // Assert
-        Assert.False(isValid, "The pawn should not be able to move out of bounds.");
-    }
+            // Act
+            pawn.OnMoved(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-    [Fact]
-    public void Pawn_IsValidMove_ShouldAllowEnPassantCapture()
-    {
-        // Arrange
-        var whitePawn = new Pawn("White", new Position("e5"));
-        var blackPawn = new Pawn("Black", new Position("d5"));
+            // Assert
+            _mockStateService.Verify(s => s.SetEnPassantTarget(expectedEnPassantTarget, pawn), Times.Once);
+            _mockStateService.Verify(s => s.ResetEnPassantTarget(), Times.Never);
+            Assert.Equal(targetPosition, pawn.Position);
+        }
 
-        var chessBoard = InitializeCustomBoard(
-            (whitePawn, new Position("e5")),
-            (blackPawn, new Position("d5"))
-        );
+        [Fact]
+        public void Pawn_OnMoved_ShouldResetEnPassantTarget_WhenNotDoubleMoved()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e4"));
+            var targetPosition = new Position("e5"); // Single move forward
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .WithEnPassantTarget(new Position("d6"), blackPawn)
-            .Build();
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
 
-        var targetPosition = new Position("d6"); // White pawn captures en passant
+            // Act
+            pawn.OnMoved(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        // Act
-        bool isValid = whitePawn.IsValidMove(targetPosition, gameContext);
+            // Assert
+            _mockStateService.Verify(s => s.ResetEnPassantTarget(), Times.Once);
+            _mockStateService.Verify(s => s.SetEnPassantTarget(It.IsAny<Position>(), It.IsAny<ChessPiece>()), Times.Never);
+            Assert.Equal(targetPosition, pawn.Position);
+        }
 
-        // Assert
-        Assert.True(isValid, "The white pawn should be able to capture en passant.");
-    }
+        [Fact]
+        public void Pawn_OnMoved_ShouldPromoteAtEndOfBoard()
+        {
+            // Arrange
+            var pawn = new Pawn("White", new Position("e7"));
+            var targetPosition = new Position("e8"); // Move to promotion rank
 
-    [Fact]
-    public void Pawn_OnMoved_ShouldSetEnPassantTarget()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e2"));
-        var targetPosition = new Position("e4"); // Double move forward
-        var expectedEnPassantTarget = new Position("e3");
+            _mockChessBoard.Setup(board => board.GetPieceAt(pawn.Position)).Returns(pawn);
+            _mockChessBoard.Setup(board => board.SetPieceAt(targetPosition, It.IsAny<Queen>())).Verifiable();
 
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e2")));
+            // Act
+            pawn.OnMoved(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-        var gameContextBuilder = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithEnPassantTarget(expectedEnPassantTarget, pawn)
-            .WithCurrentPlayer("White");
-        var gameContext = gameContextBuilder.Build();
-
-        // Act
-        pawn.OnMoved(targetPosition, gameContext);
-
-        // Assert
-        // Verify that SetEnPassantTarget was called with correct parameters
-        gameContextBuilder.StateServiceMock.Verify(s => s.SetEnPassantTarget(expectedEnPassantTarget, pawn), Times.Exactly(2));
-
-        // Optionally, check the EnPassantTarget property
-        var enPassantTarget = gameContext.State.EnPassantTarget;
-        Assert.Equal(expectedEnPassantTarget, enPassantTarget);
-    }
-
-    [Fact]
-    public void Pawn_OnMoved_ShouldPromoteAtEndOfBoard()
-    {
-        // Arrange
-        var pawn = new Pawn("White", new Position("e7"));
-        var chessBoard = InitializeCustomBoard((pawn, new Position("e7")));
-
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .Build();
-
-        var targetPosition = new Position("e8"); // Move to promotion rank
-
-        // Act
-        pawn.OnMoved(targetPosition, gameContext);
-
-        var promotedPiece = chessBoard.GetPieceAt(targetPosition);
-
-        // Assert
-        Assert.IsType<Queen>(promotedPiece);
-        Assert.Equal("White", promotedPiece.Color);
-        Assert.Equal(targetPosition, promotedPiece.Position);
+            // Assert
+            _mockChessBoard.Verify(board => board.SetPieceAt(targetPosition, It.Is<Queen>(q =>
+                q.Color == "White" && q.Position.Equals(targetPosition))),
+                Times.Once);
+        }
     }
 }
-

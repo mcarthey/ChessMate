@@ -1,167 +1,159 @@
 // File: ChessMate.Tests/Models/RookTests.cs
 
 using ChessMate.Models;
+using ChessMate.Services;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace ChessMate.Tests.Models;
-
-public class RookTests : TestHelper
+namespace ChessMate.Tests.Models
 {
-    public RookTests(ITestOutputHelper output) : base(output)
+    public class RookTests
     {
-    }
+        private readonly Mock<IChessBoard> _mockChessBoard;
+        private readonly Mock<IStateService> _mockStateService;
 
-    [Fact]
-    public void Rook_IsValidMove_ShouldAllowStraightMove()
-    {
-        // Arrange
-        var rook = new Rook("White", new Position("a1"));
-        var chessBoard = InitializeCustomBoard((rook, new Position("a1")));
+        public RookTests()
+        {
+            _mockChessBoard = new Mock<IChessBoard>();
+            _mockStateService = new Mock<IStateService>();
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
-        var targetPosition = new Position("a6"); // Move horizontally
+        [Fact]
+        public void Rook_IsValidMove_ShouldAllowStraightMove()
+        {
+            // Arrange
+            var rook = new Rook("White", new Position("a1"));
+            var targetPosition = new Position("a6"); // Move horizontally
 
-        // Act
-        bool isValid = rook.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(rook.Position)).Returns(rook);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a2"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a3"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a4"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a5"))).Returns((ChessPiece)null);
 
-        // Assert
-        Assert.True(isValid, "The rook should be able to move horizontally.");
-    }
+            // Act
+            bool isValid = rook.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-    [Fact]
-    public void Rook_IsValidMove_ShouldAllowVerticalMove()
-    {
-        // Arrange
-        var rook = new Rook("White", new Position("a1"));
-        var chessBoard = InitializeCustomBoard((rook, new Position("a1")));
+            // Assert
+            Assert.True(isValid, "The rook should be able to move horizontally.");
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
-        var targetPosition = new Position("d1"); // Move vertically
+        [Fact]
+        public void Rook_IsValidMove_ShouldAllowVerticalMove()
+        {
+            // Arrange
+            var rook = new Rook("White", new Position("a1"));
+            var targetPosition = new Position("d1"); // Move vertically
 
-        // Act
-        bool isValid = rook.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(rook.Position)).Returns(rook);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("b1"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("c1"))).Returns((ChessPiece)null);
 
-        // Assert
-        Assert.True(isValid, "The rook should be able to move vertically.");
-    }
+            // Act
+            bool isValid = rook.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-    [Fact]
-    public void Rook_IsValidMove_ShouldRejectDiagonalMove()
-    {
-        // Arrange
-        var rook = new Rook("White", new Position("a1"));
-        var chessBoard = InitializeCustomBoard((rook, new Position("a1")));
+            // Assert
+            Assert.True(isValid, "The rook should be able to move vertically.");
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
-        var targetPosition = new Position("c3"); // Diagonal move
+        [Fact]
+        public void Rook_IsValidMove_ShouldRejectDiagonalMove()
+        {
+            // Arrange
+            var rook = new Rook("White", new Position("a1"));
+            var targetPosition = new Position("c3"); // Diagonal move
 
-        // Act
-        bool isValid = rook.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(rook.Position)).Returns(rook);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
 
-        // Assert
-        Assert.False(isValid, "The rook should not be able to move diagonally.");
-    }
+            // Act
+            bool isValid = rook.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-    [Fact]
-    public void Rook_IsValidMove_ShouldAllowCapture()
-    {
-        // Arrange
-        var rook = new Rook("White", new Position("a1"));
-        var opponentPawn = new Pawn("Black", new Position("a6"));
-        var chessBoard = InitializeCustomBoard(
-            (rook, new Position("a1")),
-            (opponentPawn, new Position("a6"))
-        );
+            // Assert
+            Assert.False(isValid, "The rook should not be able to move diagonally.");
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
-        var targetPosition = new Position("a6"); // Capture opponent's piece
+        [Fact]
+        public void Rook_IsValidMove_ShouldAllowCapture()
+        {
+            // Arrange
+            var rook = new Rook("White", new Position("a1"));
+            var opponentPawn = new Pawn("Black", new Position("a6"));
+            var targetPosition = opponentPawn.Position; // Capture opponent's piece
 
-        // Act
-        bool isValid = rook.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(rook.Position)).Returns(rook);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns(opponentPawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a2"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a3"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a4"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a5"))).Returns((ChessPiece)null);
 
-        // Assert
-        Assert.True(isValid, "The rook should be able to capture an opponent's piece.");
-    }
+            // Act
+            bool isValid = rook.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-    [Fact]
-    public void Rook_IsValidMove_ShouldRejectMoveToOccupiedSquareByOwnPiece()
-    {
-        // Arrange
-        var rook = new Rook("White", new Position("a1"));
-        var ownPawn = new Pawn("White", new Position("a6"));
-        var chessBoard = InitializeCustomBoard(
-            (rook, new Position("a1")),
-            (ownPawn, new Position("a6"))
-        );
+            // Assert
+            Assert.True(isValid, "The rook should be able to capture an opponent's piece.");
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
-        var targetPosition = new Position("a6"); // Square occupied by own piece
+        [Fact]
+        public void Rook_IsValidMove_ShouldRejectMoveToOccupiedSquareByOwnPiece()
+        {
+            // Arrange
+            var rook = new Rook("White", new Position("a1"));
+            var ownPawn = new Pawn("White", new Position("a6"));
+            var targetPosition = ownPawn.Position; // Square occupied by own piece
 
-        // Act
-        bool isValid = rook.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(rook.Position)).Returns(rook);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns(ownPawn);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a2"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a3"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a4"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a5"))).Returns((ChessPiece)null);
 
-        // Assert
-        Assert.False(isValid, "The rook should not be able to move to a square occupied by its own piece.");
-    }
+            // Act
+            bool isValid = rook.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-    [Fact]
-    public void Rook_IsValidMove_ShouldRejectMoveIfPathIsBlocked()
-    {
-        // Arrange
-        var rook = new Rook("White", new Position("a1"));
-        var blockingPiece = new Pawn("White", new Position("a4"));
-        var chessBoard = InitializeCustomBoard(
-            (rook, new Position("a1")),
-            (blockingPiece, new Position("a4"))
-        );
+            // Assert
+            Assert.False(isValid, "The rook should not be able to move to a square occupied by its own piece.");
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
-        var targetPosition = new Position("a6"); // Path is blocked
+        [Fact]
+        public void Rook_IsValidMove_ShouldRejectMoveIfPathIsBlocked()
+        {
+            // Arrange
+            var rook = new Rook("White", new Position("a1"));
+            var blockingPiece = new Pawn("White", new Position("a4"));
+            var targetPosition = new Position("a6"); // Path is blocked
 
-        // Act
-        bool isValid = rook.IsValidMove(targetPosition, gameContext);
+            _mockChessBoard.Setup(board => board.GetPieceAt(rook.Position)).Returns(rook);
+            _mockChessBoard.Setup(board => board.GetPieceAt(blockingPiece.Position)).Returns(blockingPiece);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a2"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a3"))).Returns((ChessPiece)null);
+            _mockChessBoard.Setup(board => board.GetPieceAt(new Position("a5"))).Returns((ChessPiece)null);
 
-        // Assert
-        Assert.False(isValid, "The rook should not be able to move if the path is blocked.");
-    }
+            // Act
+            bool isValid = rook.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
-    [Fact]
-    public void Rook_IsValidMove_ShouldRejectOutOfBoundsMove()
-    {
-        // Arrange
-        var rook = new Rook("White", new Position("a1"));
-        var chessBoard = InitializeCustomBoard((rook, new Position("a1")));
+            // Assert
+            Assert.False(isValid, "The rook should not be able to move if the path is blocked.");
+        }
 
-        var gameContext = new GameContextBuilder()
-            .WithBoard(chessBoard)
-            .WithCurrentPlayer("White")
-            .Build();
-        var targetPosition = new Position(-1, 0); // Out of bounds
+        [Fact]
+        public void Rook_IsValidMove_ShouldRejectOutOfBoundsMove()
+        {
+            // Arrange
+            var rook = new Rook("White", new Position("a1"));
+            var targetPosition = new Position(-1, 0); // Out of bounds
 
-        // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => rook.IsValidMove(targetPosition, gameContext));
+            _mockChessBoard.Setup(board => board.GetPieceAt(rook.Position)).Returns(rook);
+            _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Throws<ArgumentOutOfRangeException>();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => rook.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object));
+        }
+
     }
 }
-
-
-

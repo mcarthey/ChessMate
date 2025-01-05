@@ -1,4 +1,6 @@
-﻿using ChessMate.Services;
+﻿// File: ChessMate/Models/ChessPiece.cs
+
+using ChessMate.Services;
 
 namespace ChessMate.Models;
 
@@ -23,16 +25,16 @@ public abstract class ChessPiece
     }
 
     /// <summary>
-    /// Validates whether the move is legal based on rules and game context.
+    /// Validates whether the move is legal based on rules and game state.
     /// Must be overridden in derived classes.
     /// </summary>
-    public abstract bool IsValidMove(Position targetPosition, IGameContext context);
+    public abstract bool IsValidMove(Position targetPosition, IChessBoard board, IStateService stateService);
 
     /// <summary>
     /// Handles updates to the piece after a successful move.
     /// Can be overridden in derived classes.
     /// </summary>
-    public virtual void OnMoved(Position to, IGameContext context)
+    public virtual void OnMoved(Position to, IChessBoard board, IStateService stateService)
     {
         // Default implementation does nothing
         // Derived classes can override to implement specific behavior (e.g., pawn promotion)

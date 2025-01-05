@@ -2,8 +2,9 @@
 @using ChessMate.Models
 @using ChessMate.Services
 @using ChessMate.Utilities
+@inject IChessBoard Board
+@inject IStateService State
 @inject IGameEngine GameEngine
-
 <h3>Chess Game</h3>
 
 <div class="chess-container">
@@ -27,7 +28,7 @@
                         @for (int col = 0; col < 8; col++)
                         {
                             var position = new Position(row, col);
-                            var piece = GameEngine.Board.GetPieceAt(position);
+                            var piece = Board.GetPieceAt(position);
                             <td @onclick="() => SelectSquare(position)"
                                 class="@GetSquareClass(position)">
                                 @(piece?.Representation ?? "")
@@ -51,14 +52,14 @@
     </div>
     <div class="game-info">
         <h3>Game Info</h3>
-        <p>Current Player: @GameEngine.GetCurrentPlayer()</p>
-        <p>Check: @(GameEngine.State.IsCheck ? "Yes" : "No")</p>
-        <p>Checkmate: @(GameEngine.State.IsCheckmate ? "Yes" : "No")</p>
+        <p>Current Player: @State.CurrentPlayer</p>
+        <p>Check: @(State.IsCheck ? "Yes" : "No")</p>
+        <p>Checkmate: @(State.IsCheckmate ? "Yes" : "No")</p>
     </div>
     <div class="move-log">
         <h3>Move Log</h3>
         <ul>
-            @foreach (var move in GameEngine.State.MoveLog)
+            @foreach (var move in State.MoveLog)
             {
                 <li>@move</li>
             }

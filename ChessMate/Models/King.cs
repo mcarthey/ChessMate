@@ -16,11 +16,8 @@ public class King : ChessPiece
     /// <summary>
     /// Validates the king's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove(Position targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IChessBoard board, IStateService state)
     {
-        var board = context.Board;
-        var state = context.State;
-
         int rowDiff = Math.Abs(targetPosition.Row - Position.Row);
         int colDiff = Math.Abs(targetPosition.Col - Position.Col);
 
@@ -33,7 +30,7 @@ public class King : ChessPiece
             if (targetPiece == null || targetPiece.Color != Color)
             {
                 // Check if the move would result in the king being in check
-                if (WouldMoveCauseSelfCheck(targetPosition, context))
+                if (WouldMoveCauseSelfCheck(targetPosition, state))
                 {
                     return false;
                 }
@@ -53,17 +50,17 @@ public class King : ChessPiece
         return false; // Invalid move
     }
 
-    private bool WouldMoveCauseSelfCheck(Position targetPosition, IGameContext context)
+    private bool WouldMoveCauseSelfCheck(Position targetPosition, IStateService state)
     {
-        var opponentAttacks = Color == "White" ? context.State.BlackAttacks : context.State.WhiteAttacks;
+        var opponentAttacks = Color == "White" ? state.BlackAttacks : state.WhiteAttacks;
         return opponentAttacks.Contains(targetPosition);
     }
 
     // Optional: Override OnMoved if king has specific post-move behavior
-    public override void OnMoved(Position to, IGameContext context)
+    public override void OnMoved(Position to, IChessBoard board, IStateService stateService)
     {
-        base.OnMoved(to, context);
-        // Add any king-specific logic here if needed (e.g., updating castling rights)
+        base.OnMoved(to, board, stateService);
+        // Add any bishop-specific logic here if needed
     }
 
     /// <summary>

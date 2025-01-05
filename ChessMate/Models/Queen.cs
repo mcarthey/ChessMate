@@ -16,10 +16,8 @@ public class Queen : ChessPiece
     /// <summary>
     /// Validates the queen's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove(Position targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IChessBoard board, IStateService state)
     {
-        var board = context.Board;
-
         int rowDiff = Math.Abs(targetPosition.Row - Position.Row);
         int colDiff = Math.Abs(targetPosition.Col - Position.Col);
 
@@ -39,9 +37,10 @@ public class Queen : ChessPiece
     }
 
     // Optional: Override OnMoved if queen has specific post-move behavior
-    public override void OnMoved(Position to, IGameContext context)
+    public override void OnMoved(Position to, IChessBoard board, IStateService stateService)
     {
-        base.OnMoved(to, context);
-        // Add any queen-specific logic here if needed
+        base.OnMoved(to, board, stateService);
+        // Add any bishop-specific logic here if needed
     }
+
 }

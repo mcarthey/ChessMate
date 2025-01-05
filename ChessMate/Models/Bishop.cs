@@ -16,10 +16,8 @@ public class Bishop : ChessPiece
     /// <summary>
     /// Validates the bishop's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove(Position targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IChessBoard board, IStateService stateService)
     {
-        var board = context.Board;
-
         // 1. Validate diagonal movement
         int rowDifference = Math.Abs(targetPosition.Row - Position.Row);
         int colDifference = Math.Abs(targetPosition.Col - Position.Col);
@@ -36,9 +34,9 @@ public class Bishop : ChessPiece
     }
 
     // Optional: Override OnMoved if bishop has specific post-move behavior
-    public override void OnMoved(Position to, IGameContext context)
+    public override void OnMoved(Position to, IChessBoard board, IStateService stateService)
     {
-        base.OnMoved(to, context);
+        base.OnMoved(to, board, stateService);
         // Add any bishop-specific logic here if needed
     }
 }

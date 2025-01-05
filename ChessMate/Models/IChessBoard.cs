@@ -13,5 +13,7 @@ namespace ChessMate.Models
         Position FindKing(string color);
 
         IEnumerable<ChessPiece> GetAllPieces();
+        event Action<ChessPiece, Position> OnPieceSet;
+        event Action<Position> OnPieceRemoved;
     }
 }

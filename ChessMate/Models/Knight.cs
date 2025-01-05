@@ -15,7 +15,7 @@ public class Knight : ChessPiece
     /// <summary>
     /// Validates the knight's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove(Position targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IChessBoard board, IStateService state)
     {
         int rowDiff = Math.Abs(targetPosition.Row - Position.Row);
         int colDiff = Math.Abs(targetPosition.Col - Position.Col);
@@ -26,7 +26,6 @@ public class Knight : ChessPiece
         if (!isValidLShape)
             return false;
 
-        var board = context.Board;
         var targetPiece = board.GetPieceAt(targetPosition);
 
         // Knights can jump over pieces, so we only need to check the target square
@@ -34,9 +33,10 @@ public class Knight : ChessPiece
     }
 
     // Optional: Override OnMoved if knight has specific post-move behavior
-    public override void OnMoved(Position to, IGameContext context)
+    public override void OnMoved(Position to, IChessBoard board, IStateService stateService)
     {
-        base.OnMoved(to, context);
-        // Add any knight-specific logic here if needed
+        base.OnMoved(to, board, stateService);
+        // Add any bishop-specific logic here if needed
     }
+
 }

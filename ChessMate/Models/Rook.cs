@@ -16,10 +16,8 @@ public class Rook : ChessPiece
     /// <summary>
     /// Validates the rook's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove(Position targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IChessBoard board, IStateService state)
     {
-        var board = context.Board;
-
         // Rook moves in straight lines along rows or columns
         bool sameRow = Position.Row == targetPosition.Row;
         bool sameCol = Position.Col == targetPosition.Col;
@@ -28,8 +26,10 @@ public class Rook : ChessPiece
             return false;
 
         // Check if the path is clear
-        if (!MoveValidationHelper.IsPathClear(Position, targetPosition, board))
+        if (!MoveValidationHelper.IsPathClear(Position, targetPosition, board)) {
+            Console.WriteLine($"The position {Position} is not clear");
             return false;
+        }
 
         // Check if the target square is empty or occupied by an opponent's piece
         var targetPiece = board.GetPieceAt(targetPosition);
@@ -37,9 +37,10 @@ public class Rook : ChessPiece
     }
 
     // Optional: Override OnMoved if rook has specific post-move behavior
-    public override void OnMoved(Position to, IGameContext context)
+    public override void OnMoved(Position to, IChessBoard board, IStateService stateService)
     {
-        base.OnMoved(to, context);
-        // Add any rook-specific logic here if needed (e.g., updating castling rights)
+        base.OnMoved(to, board, stateService);
+        // Add any bishop-specific logic here if needed
     }
+
 }

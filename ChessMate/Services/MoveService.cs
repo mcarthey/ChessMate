@@ -1,36 +1,52 @@
 ﻿// File: ChessMate/Services/MoveService.cs
 
 using ChessMate.Models;
+using System;
 
 namespace ChessMate.Services
 {
+    /// <summary>
+    /// Service responsible for handling chess moves.
+    /// </summary>
     public class MoveService : IMoveService
     {
-        private readonly IGameContext _context;
+        private readonly IChessBoard _board;
+        private readonly IStateService _stateService;
         private readonly IMoveValidatorService _moveValidator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MoveService"/> class.
+        /// </summary>
+        /// <param name="board">The chess board.</param>
+        /// <param name="stateService">The game state service.</param>
+        /// <param name="moveValidator">The move validator service.</param>
         public MoveService(
-            IGameContext context,
+            IChessBoard board,
+            IStateService stateService,
             IMoveValidatorService moveValidator)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _board = board ?? throw new ArgumentNullException(nameof(board));
+            _stateService = stateService ?? throw new ArgumentNullException(nameof(stateService));
             _moveValidator = moveValidator ?? throw new ArgumentNullException(nameof(moveValidator));
         }
 
+        /// <summary>
+        /// Attempts to move a piece from one position to another.
+        /// </summary>
+        /// <param name="from">The starting position.</param>
+        /// <param name="to">The target position.</param>
+        /// <returns>True if the move was successful; otherwise, false.</returns>
         public bool TryMove(Position from, Position to)
         {
-            var board = _context.Board;
-            var state = _context.State;
-
-            var piece = board.GetPieceAt(from);
-            if (piece == null || piece.Color != state.CurrentPlayer)
+            var piece = _board.GetPieceAt(from);
+            if (piece == null || piece.Color != _stateService.CurrentPlayer)
                 return false; // Invalid move: no piece or wrong player's turn.
 
-            // Validate the move using the piece's method
+            // Validate the move using the move validator service
             bool isValidMove;
             try
             {
-                isValidMove = _moveValidator.IsValidMove(piece, to, _context);
+                isValidMove = _moveValidator.IsValidMove(piece, to, _board, _stateService);
             }
             catch
             {
@@ -41,33 +57,32 @@ namespace ChessMate.Services
                 return false;
 
             // Check if the move would result in self-check
-            if (state.WouldMoveCauseSelfCheck(piece, from, to, _context))
+            if (_stateService.WouldMoveCauseSelfCheck(piece, from, to))
                 return false;
 
             // Perform the move
             ExecuteMove(piece, from, to);
 
             // Update game state
-            state.UpdateGameStateAfterMove(piece, from, to, _context);
+            _stateService.UpdateGameStateAfterMove(piece, from, to);
 
             return true;
         }
 
+        /// <summary>
+        /// Executes the move on the chess board.
+        /// </summary>
+        /// <param name="piece">The chess piece to move.</param>
+        /// <param name="from">The starting position.</param>
+        /// <param name="to">The target position.</param>
         private void ExecuteMove(ChessPiece piece, Position from, Position to)
         {
-            var board = _context.Board;
-
-            board.RemovePieceAt(from);
-            board.SetPieceAt(to, piece);
+            _board.RemovePieceAt(from);
+            _board.SetPieceAt(to, piece);
             piece.Position = to;
 
             // Execute any post-move actions (e.g., pawn promotion)
-            piece.OnMoved(to, _context);
+            piece.OnMoved(to, _board, _stateService);
         }
     }
 }
-
-
-
-
-

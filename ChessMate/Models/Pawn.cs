@@ -15,11 +15,8 @@ public class Pawn : ChessPiece
     /// <summary>
     /// Validates the pawn's movement based on the given context.
     /// </summary>
-    public override bool IsValidMove(Position targetPosition, IGameContext context)
+    public override bool IsValidMove(Position targetPosition, IChessBoard board, IStateService state)
     {
-        var board = context.Board;
-        var state = context.State;
-
         int forwardDirection = (Color == "White") ? -1 : 1;
         int rowDifference = targetPosition.Row - Position.Row;
         int colDifference = targetPosition.Col - Position.Col;
@@ -66,11 +63,8 @@ public class Pawn : ChessPiece
     /// <summary>
     /// Handles updates to the state after a successful move.
     /// </summary>
-    public override void OnMoved(Position to, IGameContext context)
+    public override void OnMoved(Position to, IChessBoard board, IStateService state)
     {
-        var state = context.State;
-        var board = context.Board;
-
         // En passant eligibility
         if (Math.Abs(to.Row - Position.Row) == 2) // Moved two squares
         {
@@ -98,6 +92,6 @@ public class Pawn : ChessPiece
         }
 
         // Call base method to switch player and update game state
-        base.OnMoved(to, context);
+        base.OnMoved(to, board, state);
     }
 }

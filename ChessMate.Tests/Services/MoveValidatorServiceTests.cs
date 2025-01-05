@@ -6,67 +6,109 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace ChessMate.Tests.Services;
-
-public class MoveValidatorServiceTests : TestHelper
+namespace ChessMate.Tests.Services
 {
-    private readonly Mock<IGameContext> _mockGameContext;
-    private readonly MoveValidatorService _moveValidatorService;
-
-    public MoveValidatorServiceTests(ITestOutputHelper output) : base(output)
+    public class MoveValidatorServiceTests
     {
-        _mockGameContext = new Mock<IGameContext>();
-        _moveValidatorService = new MoveValidatorService();
-    }
+        private readonly Mock<IChessBoard> _mockChessBoard;
+        private readonly Mock<IStateService> _mockStateService;
+        private readonly MoveValidatorService _moveValidatorService;
 
-    [Fact]
-    public void IsValidMove_ValidMove_ReturnsTrue()
-    {
-        // Arrange
-        var from = new Position("a2");
-        var to = new Position("a3");
-        var whitePawn = new Pawn("White", from);
+        public MoveValidatorServiceTests()
+        {
+            _mockChessBoard = new Mock<IChessBoard>();
+            _mockStateService = new Mock<IStateService>();
+            _moveValidatorService = new MoveValidatorService();
+        }
 
-        var mockPawn = new Mock<Pawn>("White", from) { CallBase = true };
-        mockPawn.Setup(p => p.IsValidMove(to, _mockGameContext.Object)).Returns(true);
+        [Fact]
+        public void IsValidMove_ValidMove_ReturnsTrue()
+        {
+            // Arrange
+            var from = new Position("a2");
+            var to = new Position("a3");
+            var whitePawn = new Mock<Pawn>("White", from) { CallBase = true };
+            whitePawn.Setup(p => p.IsValidMove(to, _mockChessBoard.Object, _mockStateService.Object)).Returns(true);
 
-        // Act
-        var result = _moveValidatorService.IsValidMove(mockPawn.Object, to, _mockGameContext.Object);
+            // Act
+            var result = _moveValidatorService.IsValidMove(whitePawn.Object, to, _mockChessBoard.Object, _mockStateService.Object);
 
-        // Assert
-        Assert.True(result);
-    }
+            // Assert
+            Assert.True(result);
+        }
 
-    [Fact]
-    public void IsValidMove_InvalidMove_ReturnsFalse()
-    {
-        // Arrange
-        var from = new Position("a2");
-        var to = new Position("b3"); // Invalid move for a pawn moving forward
-        var whitePawn = new Pawn("White", from);
+        [Fact]
+        public void IsValidMove_InvalidMove_ReturnsFalse()
+        {
+            // Arrange
+            var from = new Position("a2");
+            var to = new Position("b3"); // Invalid move for a pawn moving forward
+            var whitePawn = new Mock<Pawn>("White", from) { CallBase = true };
+            whitePawn.Setup(p => p.IsValidMove(to, _mockChessBoard.Object, _mockStateService.Object)).Returns(false);
 
-        var mockPawn = new Mock<Pawn>("White", from) { CallBase = true };
-        mockPawn.Setup(p => p.IsValidMove(to, _mockGameContext.Object)).Returns(false);
+            // Act
+            var result = _moveValidatorService.IsValidMove(whitePawn.Object, to, _mockChessBoard.Object, _mockStateService.Object);
 
-        // Act
-        var result = _moveValidatorService.IsValidMove(mockPawn.Object, to, _mockGameContext.Object);
+            // Assert
+            Assert.False(result);
+        }
 
-        // Assert
-        Assert.False(result);
-    }
+        [Fact]
+        public void IsValidMove_NullPiece_ReturnsFalse()
+        {
+            // Arrange
+            var to = new Position("a3");
 
-    [Fact]
-    public void IsValidMove_NullPiece_ReturnsFalse()
-    {
-        // Arrange
-        var to = new Position("a3");
+            // Act
+            var result = _moveValidatorService.IsValidMove(null, to, _mockChessBoard.Object, _mockStateService.Object);
 
-        // Act
-        var result = _moveValidatorService.IsValidMove(null, to, _mockGameContext.Object);
+            // Assert
+            Assert.False(result);
+        }
 
-        // Assert
-        Assert.False(result);
+        [Fact]
+        public void IsValidMove_PieceIsNull_ReturnsFalse()
+        {
+            // Arrange
+            var to = new Position("e4");
+
+            // Act
+            var result = _moveValidatorService.IsValidMove(null, to, _mockChessBoard.Object, _mockStateService.Object);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsValidMove_PieceIsValidButMoveCausesCheck_ReturnsTrue()
+        {
+            // Arrange
+            var from = new Position("d2");
+            var to = new Position("d4");
+            var whitePawn = new Mock<Pawn>("White", from) { CallBase = true };
+            whitePawn.Setup(p => p.IsValidMove(to, _mockChessBoard.Object, _mockStateService.Object)).Returns(true);
+
+            // Act
+            var result = _moveValidatorService.IsValidMove(whitePawn.Object, to, _mockChessBoard.Object, _mockStateService.Object);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsValidMove_PieceIsInvalidDueToBoardState_ReturnsFalse()
+        {
+            // Arrange
+            var from = new Position("e2");
+            var to = new Position("e5"); // Assuming this move is invalid based on the board state
+            var whitePawn = new Mock<Pawn>("White", from) { CallBase = true };
+            whitePawn.Setup(p => p.IsValidMove(to, _mockChessBoard.Object, _mockStateService.Object)).Returns(false);
+
+            // Act
+            var result = _moveValidatorService.IsValidMove(whitePawn.Object, to, _mockChessBoard.Object, _mockStateService.Object);
+
+            // Assert
+            Assert.False(result);
+        }
     }
 }
-
-

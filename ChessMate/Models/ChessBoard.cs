@@ -4,6 +4,10 @@ public class ChessBoard : IChessBoard
 {
     private ChessPiece[,] _pieces { get; set; } = new ChessPiece[8, 8];
 
+    // Events to notify subscribers when a piece is set or removed
+    public event Action<ChessPiece, Position> OnPieceSet;
+    public event Action<Position> OnPieceRemoved;
+
     public void InitializeBoard()
     {
         // Initialize White pieces
@@ -55,13 +59,21 @@ public class ChessBoard : IChessBoard
             _pieces[position.Row, position.Col] = piece;
             if (piece != null)
                 piece.Position = position;
+
+            // Trigger event
+            OnPieceSet?.Invoke(piece, position);
         }
     }
 
     public void RemovePieceAt(Position position)
     {
         if (IsWithinBoardBounds(position))
+        {
             _pieces[position.Row, position.Col] = null;
+
+            // Trigger event
+            OnPieceRemoved?.Invoke(position);
+        }
     }
 
     public Position FindKing(string color)
