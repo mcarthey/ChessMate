@@ -37,39 +37,10 @@
                             var isUnderAttackByBlack = blackAttackers.Any();
 
                             <td @onclick="() => SelectSquare(position)"
-                                class="@GetSquareCssClass(position, isUnderAttackByWhite, isUnderAttackByBlack)">
+                                class="@GetSquareCssClass(position)">
                                 @if (piece != null)
                                 {
                                     <span class="piece">@piece.Representation</span>
-                                }
-
-                                @if (isUnderAttackByWhite || isUnderAttackByBlack)
-                                {
-                                    <div class="attack-overlay">
-                                        @* Display attackers *@
-                                        @if (isUnderAttackByWhite)
-                                        {
-                                            <div class="attackers white">
-                                                @foreach (var attacker in whiteAttackers)
-                                                {
-                                                    <span class="attacker">@attacker.Representation (@attacker.GetType().Name)</span>
-
-                                                    <br />
-                                                }
-                                            </div>
-                                        }
-                                        @if (isUnderAttackByBlack)
-                                        {
-                                            <div class="attackers black">
-                                                @foreach (var attacker in blackAttackers)
-                                                {
-                                                    <span class="attacker">@attacker.Representation (@attacker.GetType().Name)</span>
-
-                                                    <br />
-                                                }
-                                            </div>
-                                        }
-                                    </div>
                                 }
                             </td>
                         }
@@ -89,6 +60,47 @@
             </tfoot>
         </table>
     </div>
+
+    <!-- Selected Square Attackers Section -->
+    @if (selectedPosition.HasValue)
+    {
+        <div class="attackers-info">
+            <h4>Attackers for @selectedPosition.Value.ToChessNotation()</h4>
+            <div class="attackers-list">
+                @if (isSelectedUnderAttackByWhite || isSelectedUnderAttackByBlack)
+                {
+                    @if (isSelectedUnderAttackByWhite)
+                    {
+                        <div class="attackers white">
+                            <h5>White Attackers:</h5>
+                            @foreach (var attacker in selectedWhiteAttackers)
+                            {
+                                <span class="attacker">@attacker.Representation (@attacker.GetType().Name)</span>
+
+                                <br />
+                            }
+                        </div>
+                    }
+                    @if (isSelectedUnderAttackByBlack)
+                    {
+                        <div class="attackers black">
+                            <h5>Black Attackers:</h5>
+                            @foreach (var attacker in selectedBlackAttackers)
+                            {
+                                <span class="attacker">@attacker.Representation (@attacker.GetType().Name)</span>
+
+                                <br />
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>No attackers on this square.</p>
+                }
+            </div>
+        </div>
+    }
 
     <!-- Game Information Section -->
     <div class="game-info">
@@ -139,21 +151,10 @@
 @code {
     private string? errorMessage;
     private Position? selectedPosition;
-
-    /// <summary>
-    /// Renders the attackers for a given color.
-    /// </summary>
-    private RenderFragment LoopAttackers(List<ChessPiece> attackers, string color) => builder =>
-    {
-        foreach (var attacker in attackers)
-        {
-            builder.OpenElement(0, "span");
-            builder.AddAttribute(1, "class", "attacker");
-            builder.AddContent(2, $"{attacker.Representation} ({attacker.GetType().Name})");
-            builder.CloseElement();
-            builder.AddContent(3, "<br />");
-        }
-    };
+    private List<ChessPiece> selectedWhiteAttackers = new();
+    private List<ChessPiece> selectedBlackAttackers = new();
+    private bool isSelectedUnderAttackByWhite = false;
+    private bool isSelectedUnderAttackByBlack = false;
 
     /// <summary>
     /// Handles the selection of a chessboard square.
@@ -167,6 +168,7 @@
             if (piece != null && piece.Color == State.CurrentPlayer)
             {
                 selectedPosition = position;
+                UpdateSelectedAttackers(position);
             }
             else
             {
@@ -182,6 +184,7 @@
             {
                 // Deselect if the same square is clicked
                 selectedPosition = null;
+                ClearSelectedAttackers();
                 errorMessage = null;
                 return;
             }
@@ -196,35 +199,45 @@
                 errorMessage = null;
             }
             selectedPosition = null;
+            ClearSelectedAttackers();
         }
     }
 
     /// <summary>
-    /// Determines the CSS classes for each square based on position and attack status.
+    /// Updates the attackers information for the selected square.
     /// </summary>
-    private string GetSquareCssClass(Position position, bool underAttackByWhite, bool underAttackByBlack)
+    private void UpdateSelectedAttackers(Position position)
+    {
+        selectedWhiteAttackers = State.GetWhiteAttackers(position);
+        selectedBlackAttackers = State.GetBlackAttackers(position);
+        isSelectedUnderAttackByWhite = selectedWhiteAttackers.Any();
+        isSelectedUnderAttackByBlack = selectedBlackAttackers.Any();
+    }
+
+    /// <summary>
+    /// Clears the attackers information when deselecting a square.
+    /// </summary>
+    private void ClearSelectedAttackers()
+    {
+        selectedWhiteAttackers.Clear();
+        selectedBlackAttackers.Clear();
+        isSelectedUnderAttackByWhite = false;
+        isSelectedUnderAttackByBlack = false;
+    }
+
+    /// <summary>
+    /// Determines the CSS classes for each square based on position.
+    /// </summary>
+    private string GetSquareCssClass(Position position)
     {
         string baseClass = (position.Row + position.Col) % 2 == 0 ? "light" : "dark";
-        string attackClass = "";
-
-        if (underAttackByWhite && underAttackByBlack)
-        {
-            attackClass = " both-attacked";
-        }
-        else if (underAttackByWhite)
-        {
-            attackClass = " attacked-white";
-        }
-        else if (underAttackByBlack)
-        {
-            attackClass = " attacked-black";
-        }
+        string selectedClass = "";
 
         if (selectedPosition.HasValue && selectedPosition.Value.Equals(position))
         {
-            attackClass += " selected";
+            selectedClass = " selected";
         }
 
-        return $"{baseClass}{attackClass}";
+        return $"{baseClass}{selectedClass}";
     }
 }

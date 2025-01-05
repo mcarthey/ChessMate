@@ -49,18 +49,6 @@
         background-color: #b58863;
     }
 
-    .chessboard tbody td.attacked-white {
-        background-color: #ffcccc !important; /* Light red for White attacks */
-    }
-
-    .chessboard tbody td.attacked-black {
-        background-color: #ccccff !important; /* Light blue for Black attacks */
-    }
-
-    .chessboard tbody td.both-attacked {
-        background-color: #ffccff !important; /* Light purple when under attack by both */
-    }
-
     .chessboard tbody td.selected {
         outline: 3px solid #00ff00; /* Green outline for selected square */
         transform: scale(1.05); /* Slightly enlarges the selected square */
@@ -70,28 +58,44 @@
     pointer-events: none; /* Prevent selection or dragging */
 }
 
-.attack-overlay {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 4px;
-    overflow: auto;
-    font-size: 12px;
-    padding: 2px;
-    transition: opacity 0.3s; /* Smooth transition for overlay */
+.attackers-info {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 600px;
+    background-color: #f9f9f9;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 10px;
 }
 
-.attackers.white {
-    color: red;
+    .attackers-info h4 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+.attackers-list {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
 }
 
-.attackers.black {
-    color: blue;
+.attackers {
+    margin: 5px 0;
 }
 
+    .attackers.white {
+        color: red;
+    }
+
+    .attackers.black {
+        color: blue;
+    }
+
+.attackers-list h5 {
+    margin-bottom: 5px;
+}
+
+/* Captured Pieces Styling */
 .captured-pieces {
     display: flex;
     justify-content: space-around;
@@ -151,6 +155,10 @@
             font-size: 24px;
         }
 
+    .attackers-info {
+        max-width: 400px;
+    }
+
     .attack-overlay {
         font-size: 10px;
     }
@@ -183,8 +191,8 @@
         font-size: 18px;
     }
 
-    .attack-overlay {
-        font-size: 8px;
+    .attackers-info {
+        max-width: 300px;
     }
 
     .captured-piece {
@@ -199,8 +207,4 @@
     z-index: 1;
     transform: scale(1.05); /* Slightly enlarges the square on hover */
     background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent overlay */
-}
-
-.attack-overlay:hover {
-    opacity: 1; /* Ensures the overlay is fully visible on hover */
 }
