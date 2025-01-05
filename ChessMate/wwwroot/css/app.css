@@ -58,6 +58,7 @@
     pointer-events: none; /* Prevent selection or dragging */
 }
 
+/* Attackers Information Section */
 .attackers-info {
     margin-top: 20px;
     width: 100%;
@@ -159,10 +160,6 @@
         max-width: 400px;
     }
 
-    .attack-overlay {
-        font-size: 10px;
-    }
-
     .captured-piece {
         font-size: 18px;
     }
@@ -200,11 +197,11 @@
     }
 }
 
-/* --- Hover Effects --- */
+/* --- Hover Effects with Enhanced Specificity --- */
 
-.chessboard tbody td:hover {
+table.chessboard tbody td:hover {
     outline: 2px solid #00ffff; /* Cyan outline on hover */
-    z-index: 1;
+    z-index: 2; /* Ensure it's above other elements */
     transform: scale(1.05); /* Slightly enlarges the square on hover */
     background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent overlay */
 }

@@ -33,8 +33,6 @@
                             var piece = Board.GetPieceAt(position);
                             var whiteAttackers = State.GetWhiteAttackers(position);
                             var blackAttackers = State.GetBlackAttackers(position);
-                            var isUnderAttackByWhite = whiteAttackers.Any();
-                            var isUnderAttackByBlack = blackAttackers.Any();
 
                             <td @onclick="() => SelectSquare(position)"
                                 class="@GetSquareCssClass(position)">
@@ -76,7 +74,6 @@
                             @foreach (var attacker in selectedWhiteAttackers)
                             {
                                 <span class="attacker">@attacker.Representation (@attacker.GetType().Name)</span>
-
                                 <br />
                             }
                         </div>
@@ -88,7 +85,6 @@
                             @foreach (var attacker in selectedBlackAttackers)
                             {
                                 <span class="attacker">@attacker.Representation (@attacker.GetType().Name)</span>
-
                                 <br />
                             }
                         </div>
