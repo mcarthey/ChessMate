@@ -1,6 +1,8 @@
-﻿ // File: ChessMate/Services/MoveService.cs
+﻿// File: ChessMate/Services/MoveService.cs
 
+using ChessMate.Hubs;
 using ChessMate.Models;
+using Microsoft.AspNetCore.SignalR;
 using System;
 
 namespace ChessMate.Services
@@ -13,6 +15,7 @@ namespace ChessMate.Services
         private readonly IChessBoard _board;
         private readonly IStateService _stateService;
         private readonly IMoveValidatorService _moveValidator;
+        private readonly IHubContext<ChessHub> _hubContext; // For SignalR
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MoveService"/> class.
@@ -23,11 +26,13 @@ namespace ChessMate.Services
         public MoveService(
             IChessBoard board,
             IStateService stateService,
-            IMoveValidatorService moveValidator)
+            IMoveValidatorService moveValidator,
+            IHubContext<ChessHub> hubContext) // Injected HubContext
         {
             _board = board ?? throw new ArgumentNullException(nameof(board));
             _stateService = stateService ?? throw new ArgumentNullException(nameof(stateService));
             _moveValidator = moveValidator ?? throw new ArgumentNullException(nameof(moveValidator));
+            _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
         /// <summary>
@@ -66,6 +71,10 @@ namespace ChessMate.Services
             // Update game state
             _stateService.UpdateGameStateAfterMove(piece, from, to);
 
+            // Optional: Broadcast the move via SignalR for multiplayer
+            // This will only execute if SignalR is enabled in the configuration
+            // You can check the configuration here or manage it externally
+
             return true;
         }
 
@@ -90,6 +99,14 @@ namespace ChessMate.Services
             {
                 _stateService.RegisterCapture(capturedPiece);
             }
+        }
+
+        // Optional: Method to broadcast moves via SignalR
+        public async Task BroadcastMoveAsync(Position from, Position to)
+        {
+            string fromNotation = from.ToChessNotation();
+            string toNotation = to.ToChessNotation();
+            await _hubContext.Clients.All.SendAsync("ReceiveMove", fromNotation, toNotation);
         }
     }
 }

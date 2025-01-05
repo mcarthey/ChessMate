@@ -15,9 +15,14 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<IChessBoard, ChessBoard>();
 builder.Services.AddSingleton<IStateService, StateService>();
-builder.Services.AddSingleton<IMoveService, MoveService>();
-builder.Services.AddSingleton<IGameEngine, GameEngine>();
 builder.Services.AddSingleton<IMoveValidatorService, MoveValidatorService>();
+builder.Services.AddTransient<IMoveService, MoveService>(); // Transient if MoveService holds no state
+
+// Register SignalR
+builder.Services.AddSignalR();
+
+// Register IConfiguration if needed
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 var app = builder.Build();
 
@@ -30,9 +35,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.MapBlazorHub();

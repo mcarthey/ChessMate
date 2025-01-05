@@ -34,7 +34,7 @@
         border: 1px solid #333;
         font-size: 32px;
         cursor: pointer;
-        transition: background-color 0.3s, transform 0.2s; /* Smooth transitions for hover effects */
+        transition: transform 0.2s; /* Simplified transitions */
     }
 
     .chessboard tbody th {
@@ -52,6 +52,16 @@
     .chessboard tbody td.selected {
         outline: 3px solid #00ff00; /* Green outline for selected square */
         transform: scale(1.05); /* Slightly enlarges the selected square */
+        background-color: #d4edda; /* Light green background to indicate selection */
+    }
+
+    /* Highlighting classes */
+    .chessboard .highlight {
+        background-color: #ffeb3b; /* Yellow highlight */
+    }
+
+    .chessboard .highlight-capture {
+        background-color: #f44336; /* Red highlight for capture */
     }
 
 .piece {
@@ -195,13 +205,4 @@
     .captured-piece {
         font-size: 16px;
     }
-}
-
-/* --- Hover Effects with Enhanced Specificity --- */
-
-table.chessboard tbody td:hover {
-    outline: 2px solid #00ffff; /* Cyan outline on hover */
-    z-index: 2; /* Ensure it's above other elements */
-    transform: scale(1.05); /* Slightly enlarges the square on hover */
-    background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent overlay */
 }

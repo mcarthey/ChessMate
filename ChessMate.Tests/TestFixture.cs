@@ -16,7 +16,6 @@ public class TestFixture : IDisposable
         serviceCollection.AddSingleton<IChessBoard, ChessBoard>();
         serviceCollection.AddSingleton<IStateService, StateService>();
         serviceCollection.AddSingleton<IMoveService, MoveService>();
-        serviceCollection.AddSingleton<IGameEngine, GameEngine>();
         serviceCollection.AddSingleton<IMoveValidatorService, MoveValidatorService>();
 
         ServiceProvider = serviceCollection.BuildServiceProvider();

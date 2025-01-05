@@ -1,10 +1,13 @@
 ﻿@page "/chess"
 @using ChessMate.Models
 @using ChessMate.Services
-@using ChessMate.Utilities
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.Extensions.Configuration
 @inject IChessBoard Board
 @inject IStateService State
-@inject IGameEngine GameEngine
+@inject IMoveService MoveService
+@inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
 
 <h3>Chess Game</h3>
 
@@ -152,10 +155,39 @@
     private bool isSelectedUnderAttackByWhite = false;
     private bool isSelectedUnderAttackByBlack = false;
 
-    /// <summary>
-    /// Handles the selection of a chessboard square.
-    /// </summary>
-    private void SelectSquare(Position position)
+    private bool EnableMultiplayer => Configuration.GetValue<bool>("GameSettings:EnableMultiplayer");
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EnableMultiplayer)
+        {
+            // Initialize SignalR connection
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/chesshub"))
+                .Build();
+
+            hubConnection.On<string, string>("ReceiveMove", async (start, end) =>
+            {
+                var from = new Position(start);
+                var to = new Position(end);
+                bool moveSuccess = MoveService.TryMove(from, to);
+                if (moveSuccess)
+                {
+                    // Optionally, handle post-move actions
+                }
+                else
+                {
+                    errorMessage = "Received an invalid move.";
+                }
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await hubConnection.StartAsync();
+        }
+    }
+
+    private async Task SelectSquare(Position position)
     {
         if (selectedPosition == null)
         {
@@ -185,7 +217,7 @@
                 return;
             }
 
-            bool success = GameEngine.ProcessMove(from, to);
+            bool success = MoveService.TryMove(from, to);
             if (!success)
             {
                 errorMessage = "Invalid move. Please try again.";
@@ -193,9 +225,17 @@
             else
             {
                 errorMessage = null;
+
+                // If multiplayer is enabled, send the move via SignalR
+                if (EnableMultiplayer && hubConnection != null)
+                {
+                    await hubConnection.SendAsync("SendMove", from.ToChessNotation(), to.ToChessNotation());
+                }
             }
             selectedPosition = null;
             ClearSelectedAttackers();
+
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -235,5 +275,13 @@
         }
 
         return $"{baseClass}{selectedClass}";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 }

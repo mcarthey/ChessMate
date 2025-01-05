@@ -1,7 +1,9 @@
 // File: ChessMate.Tests/Services/MoveServiceTests.cs
 
+using ChessMate.Hubs;
 using ChessMate.Models;
 using ChessMate.Services;
+using Microsoft.AspNetCore.SignalR;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,6 +15,7 @@ namespace ChessMate.Tests.Services
         private readonly Mock<IChessBoard> _mockChessBoard;
         private readonly Mock<IStateService> _mockStateService;
         private readonly Mock<IMoveValidatorService> _mockMoveValidator;
+        private readonly Mock<IHubContext<ChessHub>> _mockHubContext; 
         private readonly MoveService _moveService;
 
         public MoveServiceTests()
@@ -20,11 +23,13 @@ namespace ChessMate.Tests.Services
             _mockChessBoard = new Mock<IChessBoard>();
             _mockStateService = new Mock<IStateService>();
             _mockMoveValidator = new Mock<IMoveValidatorService>();
+            _mockHubContext = new Mock<IHubContext<ChessHub>>(); 
 
             _moveService = new MoveService(
                 _mockChessBoard.Object,
                 _mockStateService.Object,
-                _mockMoveValidator.Object);
+                _mockMoveValidator.Object,
+                _mockHubContext.Object);
         }
 
         [Fact]
