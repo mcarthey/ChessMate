@@ -13,10 +13,11 @@ public class TestFixture : IDisposable
         var serviceCollection = new ServiceCollection();
 
         // Register services for DI
-        serviceCollection.AddScoped<IStateService, StateService>();
-        serviceCollection.AddScoped<IChessBoard, ChessBoard>();
-        serviceCollection.AddScoped<IMoveService, MoveService>();
-        serviceCollection.AddScoped<IMoveValidatorService, MoveValidatorService>();
+        serviceCollection.AddSingleton<IChessBoard, ChessBoard>();
+        serviceCollection.AddSingleton<IStateService, StateService>();
+        serviceCollection.AddSingleton<IMoveService, MoveService>();
+        serviceCollection.AddSingleton<IGameEngine, GameEngine>();
+        serviceCollection.AddSingleton<IMoveValidatorService, MoveValidatorService>();
 
         ServiceProvider = serviceCollection.BuildServiceProvider();
     }

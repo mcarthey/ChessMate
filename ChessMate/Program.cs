@@ -13,11 +13,11 @@ builder.Services.AddServerSideBlazor();
 
 // Register services for DI
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddScoped<IChessBoard, ChessBoard>();
-builder.Services.AddScoped<IStateService, StateService>();
-builder.Services.AddScoped<IMoveService, MoveService>();
-builder.Services.AddScoped<IGameEngine, GameEngine>();
-builder.Services.AddScoped<IMoveValidatorService, MoveValidatorService>();
+builder.Services.AddSingleton<IChessBoard, ChessBoard>();
+builder.Services.AddSingleton<IStateService, StateService>();
+builder.Services.AddSingleton<IMoveService, MoveService>();
+builder.Services.AddSingleton<IGameEngine, GameEngine>();
+builder.Services.AddSingleton<IMoveValidatorService, MoveValidatorService>();
 
 var app = builder.Build();
 

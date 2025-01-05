@@ -5,8 +5,14 @@ public class ChessBoard : IChessBoard
     private ChessPiece[,] _pieces { get; set; } = new ChessPiece[8, 8];
 
     // Events to notify subscribers when a piece is set or removed
-    public event Action<ChessPiece, Position> OnPieceSet;
-    public event Action<Position> OnPieceRemoved;
+    public event Action<ChessPiece, Position>? OnPieceSet;
+    public event Action<Position>? OnPieceRemoved;
+
+    // Constructor initializes the board
+    public ChessBoard()
+    {
+        InitializeBoard();
+    }
 
     public void InitializeBoard()
     {
