@@ -66,6 +66,43 @@
             }
         </ul>
     </div>
+    <div class="attackers">
+        <table>
+            @for (int row = 0; row < 8; row++)
+            {
+                <tr>
+                    @for (int col = 0; col < 8; col++)
+                    {
+                        var position = new Position(row, col);
+                        var whiteAttackers = State.GetWhiteAttackers(position);
+                        var blackAttackers = State.GetBlackAttackers(position);
+
+                        <td>
+                            @loopAttackers(whiteAttackers, "White")
+                            @loopAttackers(blackAttackers, "Black")
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+    <div class="captured-pieces">
+        <h3>Captured Pieces</h3>
+        <div>
+            <h4>White Captures:</h4>
+            @foreach (var piece in State.CapturedPieces.Where(p => p.Color == "Black"))
+            {
+                <span>@piece.Representation</span>
+            }
+        </div>
+        <div>
+            <h4>Black Captures:</h4>
+            @foreach (var piece in State.CapturedPieces.Where(p => p.Color == "White"))
+            {
+                <span>@piece.Representation</span>
+            }
+        </div>
+    </div>
 </div>
 
 <p class="error-message">@errorMessage</p>
@@ -73,6 +110,14 @@
 @code {
     private string? errorMessage;
     private Position? selectedPosition;
+
+    private void loopAttackers(List<ChessPiece> attackers, string color)
+    {
+        foreach (var attacker in attackers)
+        {
+            <span>@attacker.Representation (@attacker.GetType().Name)</span><br />
+        }
+    }
 
     private void SelectSquare(Position position)
     {

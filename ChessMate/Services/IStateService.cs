@@ -13,8 +13,12 @@ public interface IStateService
     bool BlackRookKingSideMoved { get; set; }
     bool BlackRookQueenSideMoved { get; set; }
     Position? EnPassantTarget { get; }
-    HashSet<Position> WhiteAttacks { get; }
-    HashSet<Position> BlackAttacks { get; }
+    Dictionary<Position, List<ChessPiece>> WhiteAttacks { get; }
+    Dictionary<Position, List<ChessPiece>> BlackAttacks { get; }
+    List<ChessPiece> CapturedPieces { get; }
+    List<ChessPiece> GetWhiteAttackers(Position position);
+    List<ChessPiece> GetBlackAttackers(Position position);
+
     void SwitchPlayer();
     void SetPlayer(string player);
     void SetEnPassantTarget(Position target, ChessPiece piece);
@@ -23,6 +27,7 @@ public interface IStateService
     void UpdateAttackMaps();
     void UpdateGameStateAfterMove(ChessPiece piece, Position from, Position to);
     bool WouldMoveCauseSelfCheck(ChessPiece piece, Position from, Position to);
+    void RegisterCapture(ChessPiece capturedPiece);
     bool IsKingInCheck(string color);
     bool HasLegalMoves(string color);
 }

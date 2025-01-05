@@ -26,8 +26,14 @@ namespace ChessMate.Services
 
         public List<string> MoveLog { get; private set; } = new List<string>();
 
-        public HashSet<Position> WhiteAttacks { get; private set; } = new();
-        public HashSet<Position> BlackAttacks { get; private set; } = new();
+        public Dictionary<Position, List<ChessPiece>> WhiteAttacks { get; private set; } = new();
+        public Dictionary<Position, List<ChessPiece>> BlackAttacks { get; private set; } = new();
+
+
+        /// <summary>
+        /// List to track captured pieces.
+        /// </summary>
+        public List<ChessPiece> CapturedPieces { get; private set; } = new List<ChessPiece>();
 
         /// <summary>
         /// Constructor that injects the chess board and subscribes to board events.
@@ -138,6 +144,19 @@ namespace ChessMate.Services
             IsCheckmate = IsCheck && !HasLegalMoves(opponentColor);
         }
 
+        /// <summary>
+        /// Registers a captured piece.
+        /// </summary>
+        /// <param name="capturedPiece">The captured chess piece.</param>
+        public void RegisterCapture(ChessPiece capturedPiece)
+        {
+            if (capturedPiece != null)
+            {
+                CapturedPieces.Add(capturedPiece);
+                MoveLog.Add($"{capturedPiece.Color} {capturedPiece.GetType().Name} captured at {capturedPiece.Position}");
+            }
+        }
+
         public virtual void UpdateAttackMaps()
         {
             WhiteAttacks.Clear();
@@ -145,9 +164,17 @@ namespace ChessMate.Services
 
             foreach (var piece in _board.GetAllPieces())
             {
-                var attackMap = piece.Color == "White" ? WhiteAttacks : BlackAttacks;
                 var possibleMoves = GetPossibleMoves(piece);
-                attackMap.UnionWith(possibleMoves);
+                var attackMap = piece.Color == "White" ? WhiteAttacks : BlackAttacks;
+
+                foreach (var move in possibleMoves)
+                {
+                    if (!attackMap.ContainsKey(move))
+                    {
+                        attackMap[move] = new List<ChessPiece>();
+                    }
+                    attackMap[move].Add(piece);
+                }
             }
         }
 
@@ -201,6 +228,25 @@ namespace ChessMate.Services
             return isInCheck;
         }
 
+        public List<ChessPiece> GetWhiteAttackers(Position position)
+        {
+            if (WhiteAttacks.TryGetValue(position, out var attackers))
+            {
+                return attackers;
+            }
+            return new List<ChessPiece>();
+        }
+
+        public List<ChessPiece> GetBlackAttackers(Position position)
+        {
+            if (BlackAttacks.TryGetValue(position, out var attackers))
+            {
+                return attackers;
+            }
+            return new List<ChessPiece>();
+        }
+
+
         /// <summary>
         /// Determines if the king of the specified color is in check.
         /// </summary>
@@ -211,7 +257,7 @@ namespace ChessMate.Services
 
             // Use the attack maps to check if the king is in check
             var opponentAttacks = color == "White" ? BlackAttacks : WhiteAttacks;
-            return opponentAttacks.Contains(kingPosition);
+            return opponentAttacks.ContainsKey(kingPosition) && opponentAttacks[kingPosition].Any();
         }
 
         /// <summary>

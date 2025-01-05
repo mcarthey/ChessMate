@@ -1,4 +1,4 @@
-﻿// File: ChessMate/Services/MoveService.cs
+﻿ // File: ChessMate/Services/MoveService.cs
 
 using ChessMate.Models;
 using System;
@@ -77,12 +77,19 @@ namespace ChessMate.Services
         /// <param name="to">The target position.</param>
         private void ExecuteMove(ChessPiece piece, Position from, Position to)
         {
+            var capturedPiece = _board.GetPieceAt(to);
+
             _board.RemovePieceAt(from);
             _board.SetPieceAt(to, piece);
-            //piece.Position = to;
 
-            // Execute any post-move actions (e.g., pawn promotion)
-            piece.OnMoved(from, to, _board, _stateService);
+            // Execute any post-move actions (e.g., pawn promotion) and handle captures
+            piece.OnMoved(from, to, _board, _stateService, capturedPiece);
+
+            // If a capture occurred, register it
+            if (capturedPiece != null)
+            {
+                _stateService.RegisterCapture(capturedPiece);
+            }
         }
     }
 }

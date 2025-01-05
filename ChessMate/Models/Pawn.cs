@@ -63,8 +63,25 @@ public class Pawn : ChessPiece
     /// <summary>
     /// Handles updates to the state after a successful move.
     /// </summary>
-    public override void OnMoved(Position from, Position to, IChessBoard board, IStateService state)
+    public override void OnMoved(Position from, Position to, IChessBoard board, IStateService state, ChessPiece capturedPiece = null)
     {
+        // Handle en passant capture
+        if (capturedPiece == null && Math.Abs(from.Row - to.Row) == 1)
+        {
+            var enPassantTarget = state.EnPassantTarget;
+            if (enPassantTarget.HasValue && enPassantTarget.Value.Equals(to))
+            {
+                int captureRow = (Color == "White") ? to.Row + 1 : to.Row - 1;
+                Position capturedPawnPos = new Position(captureRow, to.Col);
+                ChessPiece capturedPawn = board.GetPieceAt(capturedPawnPos);
+                if (capturedPawn is Pawn)
+                {
+                    board.RemovePieceAt(capturedPawnPos);
+                    state.RegisterCapture(capturedPawn);
+                }
+            }
+        }
+
         // En passant eligibility
         if (Math.Abs(from.Row - to.Row) == 2) // Moved two squares
         {

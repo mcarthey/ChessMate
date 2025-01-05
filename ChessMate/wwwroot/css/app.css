@@ -65,3 +65,20 @@
 .ai-feedback {
     margin-top: 20px;
 }
+
+.captured-pieces {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
+}
+
+.captured-pieces div {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.captured-pieces span {
+    font-size: 24px;
+    margin-right: 5px;
+}

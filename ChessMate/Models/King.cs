@@ -57,7 +57,7 @@ public class King : ChessPiece
     }
 
     // Optional: Override OnMoved if king has specific post-move behavior
-    public override void OnMoved(Position from, Position to, IChessBoard board, IStateService state)
+    public override void OnMoved(Position from, Position to, IChessBoard board, IStateService state, ChessPiece capturedPiece = null)
     {
         base.OnMoved(from, to, board, state);
         // Add any bishop-specific logic here if needed
