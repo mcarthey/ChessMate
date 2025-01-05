@@ -30,8 +30,8 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
 
             // Setup the state: e2 not under attack
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(new HashSet<Position>());
+            _mockStateService.Setup(state => state.GetWhiteAttackers(targetPosition)).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetBlackAttackers(targetPosition)).Returns(new List<ChessPiece>());
 
             // Act
             bool isValid = king.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
@@ -50,6 +50,9 @@ namespace ChessMate.Tests.Models
             // Setup the board: King at e1, target e3 empty
             _mockChessBoard.Setup(board => board.GetPieceAt(king.Position)).Returns(king);
             _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
+
+            // Setup the state: Not relevant as move distance invalid
+            // No attackers setup needed
 
             // Act
             bool isValid = king.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
@@ -71,8 +74,8 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns(blackPawn);
 
             // Setup the state: e2 under attack by Black does not affect capture
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(new HashSet<Position>());
+            _mockStateService.Setup(state => state.GetWhiteAttackers(targetPosition)).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetBlackAttackers(targetPosition)).Returns(new List<ChessPiece>());
 
             // Act
             bool isValid = king.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
@@ -92,6 +95,10 @@ namespace ChessMate.Tests.Models
             // Setup the board: King at e1, white pawn at e2
             _mockChessBoard.Setup(board => board.GetPieceAt(king.Position)).Returns(king);
             _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns(whitePawn);
+
+            // Setup the state: Not under attack; doesn't matter as same color piece is present
+            _mockStateService.Setup(state => state.GetWhiteAttackers(targetPosition)).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetBlackAttackers(targetPosition)).Returns(new List<ChessPiece>());
 
             // Act
             bool isValid = king.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
@@ -129,9 +136,8 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.GetPieceAt(new Position("e3"))).Returns(blackRook);
 
             // Setup the state: e2 is under attack by black rook
-            var attackedPositions = new HashSet<Position> { targetPosition };
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(attackedPositions);
+            _mockStateService.Setup(state => state.GetWhiteAttackers(targetPosition)).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetBlackAttackers(targetPosition)).Returns(new List<ChessPiece> { blackRook });
 
             // Act
             bool isValid = king.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
@@ -154,9 +160,8 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.GetPieceAt(new Position("d2"))).Returns(blackQueen);
 
             // Setup the state: e2 is under attack by black queen
-            var attackedPositions = new HashSet<Position> { targetPosition };
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(attackedPositions);
+            _mockStateService.Setup(state => state.GetWhiteAttackers(targetPosition)).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetBlackAttackers(targetPosition)).Returns(new List<ChessPiece> { blackQueen });
 
             // Act
             bool isValid = king.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
@@ -182,14 +187,69 @@ namespace ChessMate.Tests.Models
             // Setup the state: Castling rights not exercised and e1 not under attack
             _mockStateService.Setup(state => state.WhiteKingMoved).Returns(false);
             _mockStateService.Setup(state => state.WhiteRookKingSideMoved).Returns(false);
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
+            _mockStateService.Setup(state => state.GetWhiteAttackers(king.Position)).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetBlackAttackers(king.Position)).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetWhiteAttackers(new Position("f1"))).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetBlackAttackers(new Position("f1"))).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetWhiteAttackers(new Position("g1"))).Returns(new List<ChessPiece>());
+            _mockStateService.Setup(state => state.GetBlackAttackers(new Position("g1"))).Returns(new List<ChessPiece>());
 
             // Act
             bool isValid = king.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
             // Assert
             Assert.False(isValid, "Castling is not implemented and should return false.");
+        }
+
+        [Fact]
+        public void King_OnMoved_ShouldUpdateCastlingRights()
+        {
+            // Arrange
+            var king = new King("White", new Position("e1"));
+            var from = new Position("e1");
+            var to = new Position("e2");
+
+            // Act
+            king.OnMoved(from, to, _mockChessBoard.Object, _mockStateService.Object, null);
+
+            // Assert
+            _mockStateService.VerifySet(state => state.WhiteKingMoved = true, Times.Once);
+            _mockStateService.VerifySet(state => state.BlackKingMoved = It.IsAny<bool>(), Times.Never);
+        }
+
+        [Fact]
+        public void King_OnMoved_WithBlackKing_ShouldUpdateCastlingRights()
+        {
+            // Arrange
+            var king = new King("Black", new Position("e8"));
+            var from = new Position("e8");
+            var to = new Position("e7");
+
+            // Act
+            king.OnMoved(from, to, _mockChessBoard.Object, _mockStateService.Object, null);
+
+            // Assert
+            _mockStateService.VerifySet(state => state.BlackKingMoved = true, Times.Once);
+            _mockStateService.VerifySet(state => state.WhiteKingMoved = It.IsAny<bool>(), Times.Never);
+        }
+
+        [Fact]
+        public void King_HandleValidationError_ShouldLogError()
+        {
+            // Arrange
+            var king = new King("White", new Position("e1"));
+            var targetPosition = new Position("e2");
+            var exception = new InvalidOperationException("Test exception");
+
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            // Act
+            king.HandleValidationError(targetPosition, exception);
+
+            // Assert
+            var expected = $"Validation Error for King moving to {targetPosition}: {exception.Message}";
+            Assert.Contains(expected, sw.ToString());
         }
     }
 }

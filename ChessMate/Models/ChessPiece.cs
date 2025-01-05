@@ -43,7 +43,7 @@ public abstract class ChessPiece
     /// <summary>
     /// Handles errors during move validation.
     /// </summary>
-    protected virtual void HandleValidationError(Position targetPosition, Exception ex)
+    public virtual void HandleValidationError(Position targetPosition, Exception ex)
     {
         string errorMessage = ex switch
         {

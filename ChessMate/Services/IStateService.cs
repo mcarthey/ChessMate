@@ -13,8 +13,8 @@ public interface IStateService
     bool BlackRookKingSideMoved { get; set; }
     bool BlackRookQueenSideMoved { get; set; }
     Position? EnPassantTarget { get; }
-    Dictionary<Position, List<ChessPiece>> WhiteAttacks { get; }
-    Dictionary<Position, List<ChessPiece>> BlackAttacks { get; }
+    IReadOnlyDictionary<Position, List<ChessPiece>> WhiteAttacks { get; }
+    IReadOnlyDictionary<Position, List<ChessPiece>> BlackAttacks { get; }
     List<ChessPiece> CapturedPieces { get; }
     List<ChessPiece> GetWhiteAttackers(Position position);
     List<ChessPiece> GetBlackAttackers(Position position);

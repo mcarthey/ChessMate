@@ -42,9 +42,8 @@ namespace ChessMate.Tests.Models
                 _mockChessBoard.Setup(board => board.GetPieceAt(target)).Returns((ChessPiece)null);
             }
 
-            // Setup the state: No attacks affecting knight's movement
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(new HashSet<Position>());
+            // Setup the state: No attackers for any target positions (Not used in Knight's IsValidMove)
+            // Since Knight's IsValidMove does not consider attack maps, we can omit this setup.
 
             // Act & Assert
             foreach (var target in validMoves)
@@ -74,10 +73,6 @@ namespace ChessMate.Tests.Models
                 _mockChessBoard.Setup(board => board.GetPieceAt(target)).Returns((ChessPiece)null);
             }
 
-            // Setup the state: No attacks affecting knight's movement
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(new HashSet<Position>());
-
             // Act & Assert
             foreach (var target in invalidMoves)
             {
@@ -98,10 +93,6 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.GetPieceAt(knight.Position)).Returns(knight);
             _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns(opponentPawn);
 
-            // Setup the state: No attacks affecting knight's movement
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(new HashSet<Position>());
-
             // Act
             bool isValid = knight.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
@@ -120,10 +111,6 @@ namespace ChessMate.Tests.Models
             // Setup the board: Knight at e4, own pawn at d6
             _mockChessBoard.Setup(board => board.GetPieceAt(knight.Position)).Returns(knight);
             _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns(ownPawn);
-
-            // Setup the state: No attacks affecting knight's movement
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(new HashSet<Position>());
 
             // Act
             bool isValid = knight.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
@@ -147,10 +134,6 @@ namespace ChessMate.Tests.Models
             _mockChessBoard.Setup(board => board.GetPieceAt(new Position("c2"))).Returns(blockingPiece2);
             _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Returns((ChessPiece)null);
 
-            // Setup the state: No attacks affecting knight's movement
-            _mockStateService.Setup(state => state.WhiteAttacks).Returns(new HashSet<Position>());
-            _mockStateService.Setup(state => state.BlackAttacks).Returns(new HashSet<Position>());
-
             // Act
             bool isValid = knight.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object);
 
@@ -163,14 +146,16 @@ namespace ChessMate.Tests.Models
         {
             // Arrange
             var knight = new Knight("White", new Position("a1"));
-            var targetPosition = new Position(8, 2); // Out of bounds
+            var targetPosition = new Position(8, 2); // Out of bounds (Row 8, Col 2)
 
-            // Setup the board: Knight at a1, target out of bounds
+            // Setup the board: Knight at a1, target out of bounds throws exception
             _mockChessBoard.Setup(board => board.GetPieceAt(targetPosition)).Throws(new ArgumentOutOfRangeException());
 
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(() =>
                 knight.IsValidMove(targetPosition, _mockChessBoard.Object, _mockStateService.Object));
         }
+
     }
 }
+

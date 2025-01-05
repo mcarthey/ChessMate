@@ -10,6 +10,8 @@ namespace ChessMate.Services
     public class StateService : IStateService, IDisposable
     {
         private readonly IChessBoard _board;
+        private readonly Dictionary<Position, List<ChessPiece>> _whiteAttacks = new();
+        private readonly Dictionary<Position, List<ChessPiece>> _blackAttacks = new();
 
         public string CurrentPlayer { get; private set; } = "White";
         public virtual bool IsCheck { get; set; }
@@ -26,9 +28,8 @@ namespace ChessMate.Services
 
         public List<string> MoveLog { get; private set; } = new List<string>();
 
-        public Dictionary<Position, List<ChessPiece>> WhiteAttacks { get; private set; } = new();
-        public Dictionary<Position, List<ChessPiece>> BlackAttacks { get; private set; } = new();
-
+        public IReadOnlyDictionary<Position, List<ChessPiece>> WhiteAttacks => _whiteAttacks;
+        public IReadOnlyDictionary<Position, List<ChessPiece>> BlackAttacks => _blackAttacks;
 
         /// <summary>
         /// List to track captured pieces.
@@ -123,8 +124,8 @@ namespace ChessMate.Services
             BlackRookQueenSideMoved = false;
 
             MoveLog.Clear();
-            WhiteAttacks.Clear();
-            BlackAttacks.Clear();
+            _whiteAttacks.Clear();
+            _blackAttacks.Clear();
         }
 
         /// <summary>
@@ -159,13 +160,13 @@ namespace ChessMate.Services
 
         public virtual void UpdateAttackMaps()
         {
-            WhiteAttacks.Clear();
-            BlackAttacks.Clear();
+            _whiteAttacks.Clear();
+            _blackAttacks.Clear();
 
             foreach (var piece in _board.GetAllPieces())
             {
                 var possibleMoves = GetPossibleMoves(piece);
-                var attackMap = piece.Color == "White" ? WhiteAttacks : BlackAttacks;
+                var attackMap = piece.Color == "White" ? _whiteAttacks : _blackAttacks;
 
                 foreach (var move in possibleMoves)
                 {
@@ -230,20 +231,12 @@ namespace ChessMate.Services
 
         public List<ChessPiece> GetWhiteAttackers(Position position)
         {
-            if (WhiteAttacks.TryGetValue(position, out var attackers))
-            {
-                return attackers;
-            }
-            return new List<ChessPiece>();
+            return _whiteAttacks.TryGetValue(position, out var attackers) ? attackers : new List<ChessPiece>();
         }
 
         public List<ChessPiece> GetBlackAttackers(Position position)
         {
-            if (BlackAttacks.TryGetValue(position, out var attackers))
-            {
-                return attackers;
-            }
-            return new List<ChessPiece>();
+            return _blackAttacks.TryGetValue(position, out var attackers) ? attackers : new List<ChessPiece>();
         }
 
 

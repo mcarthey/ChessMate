@@ -1,84 +1,206 @@
-﻿.chessboard {
-    border-collapse: collapse;
-    margin: 20px;
-}
-
-.chessboard th {
-    text-align: center;
-    vertical-align: middle;
-    width: 50px; /* Match the width of your cells */
-    height: 50px; /* Optional, match the cell height for symmetry */
-    font-weight: bold;
-    background-color: #f0f0f0; /* Light background for visibility */
-    color: #333; /* Font color */
-}
-
-.chessboard td {
-    width: 70px;
-    height: 70px;
-    text-align: center;
-    vertical-align: middle;
-    cursor: pointer;
-    border: 1px solid #333;
-    font-family: Arial, sans-serif;
-    font-size: 3rem;
-    padding: 0;
-}
-
-.chessboard .light {
-    background-color: #f0d9b5;
-}
-
-.chessboard .dark {
-    background-color: #b58863;
-}
-
-/* Highlighting classes */
-.chessboard .highlight {
-    background-color: #ffeb3b; /* Yellow highlight */
-}
-
-.chessboard .highlight-capture {
-    background-color: #f44336; /* Red highlight for capture */
-}
+﻿/* app.css */
 
 .chess-container {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
 }
 
 .chess-board {
-    flex: 3; /* Take most of the screen space */
+    position: relative;
 }
 
-.move-log {
-    flex: 1; /* Smaller column for move log */
-    max-height: 600px;
-    overflow-y: auto; /* Enable scrolling for long games */
-    background-color: #f9f9f9;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.chessboard {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 600px; /* Restricts the maximum width for larger screens */
+    height: auto; /* Allows height to adjust based on width */
 }
 
-.ai-feedback {
-    margin-top: 20px;
+    .chessboard thead th,
+    .chessboard tfoot th {
+        text-align: center;
+        padding: 5px;
+    }
+
+    .chessboard tbody th,
+    .chessboard tbody td {
+        width: 60px;
+        height: 60px;
+        position: relative;
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #333;
+        font-size: 32px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s; /* Smooth transitions for hover effects */
+    }
+
+    .chessboard tbody th {
+        background-color: #f0d9b5;
+    }
+
+    .chessboard tbody td.light {
+        background-color: #f0d9b5;
+    }
+
+    .chessboard tbody td.dark {
+        background-color: #b58863;
+    }
+
+    .chessboard tbody td.attacked-white {
+        background-color: #ffcccc !important; /* Light red for White attacks */
+    }
+
+    .chessboard tbody td.attacked-black {
+        background-color: #ccccff !important; /* Light blue for Black attacks */
+    }
+
+    .chessboard tbody td.both-attacked {
+        background-color: #ffccff !important; /* Light purple when under attack by both */
+    }
+
+    .chessboard tbody td.selected {
+        outline: 3px solid #00ff00; /* Green outline for selected square */
+        transform: scale(1.05); /* Slightly enlarges the selected square */
+    }
+
+.piece {
+    pointer-events: none; /* Prevent selection or dragging */
+}
+
+.attack-overlay {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 4px;
+    overflow: auto;
+    font-size: 12px;
+    padding: 2px;
+    transition: opacity 0.3s; /* Smooth transition for overlay */
+}
+
+.attackers.white {
+    color: red;
+}
+
+.attackers.black {
+    color: blue;
 }
 
 .captured-pieces {
     display: flex;
     justify-content: space-around;
-    margin: 10px 0;
+    width: 100%;
+    margin-top: 20px;
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
 }
 
-.captured-pieces div {
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
+.captures {
+    width: 45%;
+    text-align: center; /* Centers the captured pieces */
 }
 
-.captured-pieces span {
+.captured-pieces h3 {
+    text-align: center;
+}
+
+.captured-piece {
+    display: inline-block;
+    margin: 2px;
     font-size: 24px;
-    margin-right: 5px;
+}
+
+.move-log {
+    width: 80%;
+    margin-top: 20px;
+}
+
+    .move-log ul {
+        list-style-type: decimal;
+        padding-left: 20px;
+    }
+
+.game-info {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* --- Responsive Design Enhancements --- */
+
+/* Adjust chessboard size and elements for smaller screens */
+@media (max-width: 768px) {
+    .chessboard {
+        max-width: 400px;
+    }
+
+        .chessboard tbody th,
+        .chessboard tbody td {
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+        }
+
+    .attack-overlay {
+        font-size: 10px;
+    }
+
+    .captured-piece {
+        font-size: 18px;
+    }
+
+    .move-log {
+        width: 100%;
+    }
+
+    .captured-pieces {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .captures {
+        width: 90%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Further adjustments for very small screens */
+@media (max-width: 480px) {
+    .chessboard tbody th,
+    .chessboard tbody td {
+        width: 30px;
+        height: 30px;
+        font-size: 18px;
+    }
+
+    .attack-overlay {
+        font-size: 8px;
+    }
+
+    .captured-piece {
+        font-size: 16px;
+    }
+}
+
+/* --- Hover Effects --- */
+
+.chessboard tbody td:hover {
+    outline: 2px solid #00ffff; /* Cyan outline on hover */
+    z-index: 1;
+    transform: scale(1.05); /* Slightly enlarges the square on hover */
+    background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent overlay */
+}
+
+.attack-overlay:hover {
+    opacity: 1; /* Ensures the overlay is fully visible on hover */
 }
