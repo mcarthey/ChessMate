@@ -50,18 +50,22 @@
     }
 
     .chessboard tbody td.selected {
-        outline: 3px solid #00ff00; /* Green outline for selected square */
-        transform: scale(1.05); /* Slightly enlarges the selected square */
+        border: 3px solid #00ff00; /* Green border for selected square */
         background-color: #d4edda; /* Light green background to indicate selection */
+        transform: scale(1.05); /* Slightly enlarges the selected square */
+        transition: background-color 0.2s, border 0.2s, transform 0.2s; /* Smooth transitions */
     }
 
-    /* Highlighting classes */
-    .chessboard .highlight {
-        background-color: #ffeb3b; /* Yellow highlight */
+    /* Valid Move Squares - Yellow */
+    .chessboard tbody td.highlight-valid {
+        background-color: #ffeb3b !important; /* Yellow highlight */
+        transition: background-color 0.2s;
     }
 
-    .chessboard .highlight-capture {
-        background-color: #f44336; /* Red highlight for capture */
+    /* Capture Move Squares - Red */
+    .chessboard tbody td.highlight-capture {
+        background-color: #f44336 !important; /* Red highlight for capture */
+        transition: background-color 0.2s;
     }
 
 .piece {
@@ -84,15 +88,15 @@
         margin-bottom: 10px;
     }
 
-.attackers-list {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-}
+    .attackers-list {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+    }
 
-.attackers {
-    margin: 5px 0;
-}
+    .attackers {
+        margin: 5px 0;
+    }
 
     .attackers.white {
         color: red;
@@ -205,4 +209,22 @@
     .captured-piece {
         font-size: 16px;
     }
+}
+
+/* --- Hover Effects --- */
+
+/* General Hover Effect */
+.chessboard tbody td:hover {
+    background-color: #cddc39; /* Light green on hover */
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* Differentiated Hover Based on Square Type */
+.chessboard tbody td.light:hover {
+    background-color: #d0ebff; /* Light blue on hover */
+}
+
+.chessboard tbody td.dark:hover {
+    background-color: #a69b92; /* Darker shade on hover */
 }

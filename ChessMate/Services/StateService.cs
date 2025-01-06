@@ -179,7 +179,7 @@ namespace ChessMate.Services
             }
         }
 
-        private List<Position> GetPossibleMoves(ChessPiece piece)
+        public List<Position> GetPossibleMoves(ChessPiece piece)
         {
             var moves = new List<Position>();
             for (int r = 0; r < 8; r++)

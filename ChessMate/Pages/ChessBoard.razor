@@ -26,28 +26,30 @@
                 </tr>
             </thead>
             <tbody>
-                @for (int row = 0; row < 8; row++)
-                {
-                    <tr>
-                        <th>@(8 - row)</th>
-                        @for (int col = 0; col < 8; col++)
-                        {
-                            var position = new Position(row, col);
-                            var piece = Board.GetPieceAt(position);
-                            var whiteAttackers = State.GetWhiteAttackers(position);
-                            var blackAttackers = State.GetBlackAttackers(position);
+            @for (int row = 0; row < 8; row++)
+            {
+                int currentRow = row; // Capture row locally
+                <tr>
+                    <th>@(8 - currentRow)</th> <!-- Row label (8, 7, 6, ...) -->
+                    @for (int col = 0; col < 8; col++)
+                    {
+                        int currentCol = col; // Capture col locally
+                        var position = new Position(currentRow, currentCol);
+                        var piece = Board.GetPieceAt(position);
+                        var whiteAttackers = State.GetWhiteAttackers(position);
+                        var blackAttackers = State.GetBlackAttackers(position);
 
-                            <td @onclick="() => SelectSquare(position)"
-                                class="@GetSquareCssClass(position)">
-                                @if (piece != null)
-                                {
-                                    <span class="piece">@piece.Representation</span>
-                                }
-                            </td>
-                        }
-                        <th>@(8 - row)</th>
-                    </tr>
-                }
+                        <td @onclick="() => SelectSquare(position)"
+                            class="@GetSquareCssClass(position)">
+                            @if (piece != null)
+                            {
+                                <span class="piece">@piece.Representation</span>
+                            }
+                        </td>
+                    }
+                    <th>@(8 - currentRow)</th> <!-- Row label on the other side -->
+                </tr>
+            }
             </tbody>
             <tfoot>
                 <tr>
@@ -155,8 +157,18 @@
     private bool isSelectedUnderAttackByWhite = false;
     private bool isSelectedUnderAttackByBlack = false;
 
+    // Collection to store highlighted positions and their types
+    private List<Position> highlightedPositions = new();
+    private Dictionary<Position, HighlightType> highlightedMoveTypes = new();
+
     private bool EnableMultiplayer => Configuration.GetValue<bool>("GameSettings:EnableMultiplayer");
     private HubConnection? hubConnection;
+
+    private enum HighlightType
+    {
+        Valid,
+        Capture
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -197,6 +209,7 @@
             {
                 selectedPosition = position;
                 UpdateSelectedAttackers(position);
+                HighlightPossibleMoves(piece);
             }
             else
             {
@@ -213,30 +226,76 @@
                 // Deselect if the same square is clicked
                 selectedPosition = null;
                 ClearSelectedAttackers();
+                ClearHighlights();
                 errorMessage = null;
+                await InvokeAsync(StateHasChanged);
                 return;
             }
 
-            bool success = MoveService.TryMove(from, to);
-            if (!success)
+            // Check if the clicked square is a highlighted move
+            if (highlightedPositions.Contains(to))
             {
-                errorMessage = "Invalid move. Please try again.";
+                bool success = MoveService.TryMove(from, to);
+                if (!success)
+                {
+                    errorMessage = "Invalid move. Please try again.";
+                }
+                else
+                {
+                    errorMessage = null;
+
+                    // If multiplayer is enabled, send the move via SignalR
+                    if (EnableMultiplayer && hubConnection != null)
+                    {
+                        await hubConnection.SendAsync("SendMove", from.ToChessNotation(), to.ToChessNotation());
+                    }
+                }
+
+                selectedPosition = null;
+                ClearSelectedAttackers();
+                ClearHighlights();
+
+                await InvokeAsync(StateHasChanged);
+                return;
             }
             else
             {
-                errorMessage = null;
-
-                // If multiplayer is enabled, send the move via SignalR
-                if (EnableMultiplayer && hubConnection != null)
-                {
-                    await hubConnection.SendAsync("SendMove", from.ToChessNotation(), to.ToChessNotation());
-                }
+                errorMessage = "Please select a highlighted valid move.";
             }
-            selectedPosition = null;
-            ClearSelectedAttackers();
-
-            await InvokeAsync(StateHasChanged);
         }
+    }
+
+    /// <summary>
+    /// Highlights possible moves for the selected piece.
+    /// </summary>
+    private void HighlightPossibleMoves(ChessPiece piece)
+    {
+        ClearHighlights();
+
+        var possibleMoves = State.GetPossibleMoves(piece); // Assumes this method exists and is public
+
+        foreach (var move in possibleMoves)
+        {
+            var targetPiece = Board.GetPieceAt(move);
+            if (targetPiece != null && targetPiece.Color != piece.Color)
+            {
+                highlightedMoveTypes[move] = HighlightType.Capture;
+            }
+            else
+            {
+                highlightedMoveTypes[move] = HighlightType.Valid;
+            }
+            highlightedPositions.Add(move);
+        }
+    }
+
+    /// <summary>
+    /// Clears all highlighted positions.
+    /// </summary>
+    private void ClearHighlights()
+    {
+        highlightedPositions.Clear();
+        highlightedMoveTypes.Clear();
     }
 
     /// <summary>
@@ -262,19 +321,20 @@
     }
 
     /// <summary>
-    /// Determines the CSS classes for each square based on position.
+    /// Determines the CSS classes for each square based on position and highlights.
     /// </summary>
     private string GetSquareCssClass(Position position)
     {
         string baseClass = (position.Row + position.Col) % 2 == 0 ? "light" : "dark";
-        string selectedClass = "";
+        string selectedClass = selectedPosition.HasValue && selectedPosition.Value.Equals(position) ? " selected" : "";
+        string highlightClass = "";
 
-        if (selectedPosition.HasValue && selectedPosition.Value.Equals(position))
+        if (highlightedPositions.Contains(position))
         {
-            selectedClass = " selected";
+            highlightClass = highlightedMoveTypes[position] == HighlightType.Capture ? " highlight-capture" : " highlight-valid";
         }
 
-        return $"{baseClass}{selectedClass}";
+        return $"{baseClass}{selectedClass}{highlightClass}";
     }
 
     public async ValueTask DisposeAsync()

@@ -411,5 +411,180 @@ namespace ChessMate.Tests.Services
             Assert.True(_stateService.IsCheckmate);
         }
 
+        [Fact]
+        public void GetPossibleMoves_KnightInCenter_ReturnsAllLShapeMoves()
+        {
+            // Arrange
+            var whiteKnight = new Knight("White", new Position("d4"));
+            var chessBoard = InitializeCustomBoard(
+                (whiteKnight, whiteKnight.Position)
+            );
+            var stateService = new StateService(chessBoard);
+
+            // Act
+            var possibleMoves = stateService.GetPossibleMoves(whiteKnight);
+
+            // Assert
+            var expectedPositions = new List<Position>
+            {
+                new Position("c6"),
+                new Position("e6"),
+                new Position("f5"),
+                new Position("f3"),
+                new Position("e2"),
+                new Position("c2"),
+                new Position("b3"),
+                new Position("b5")
+            };
+
+            Assert.Equal(expectedPositions.Count, possibleMoves.Count);
+            foreach (var pos in expectedPositions)
+            {
+                Assert.Contains(pos, possibleMoves);
+            }
+        }
+
+        [Fact]
+        public void GetPossibleMoves_PawnAtStartingPosition_ReturnsTwoForwardMoves()
+        {
+            // Arrange
+            var whitePawn = new Pawn("White", new Position("e2"));
+            var chessBoard = InitializeCustomBoard(
+                (whitePawn, whitePawn.Position)
+            );
+            var stateService = new StateService(chessBoard);
+
+            // Act
+            var possibleMoves = stateService.GetPossibleMoves(whitePawn);
+
+            // Assert
+            var expectedPositions = new List<Position>
+            {
+                new Position("e3"),
+                new Position("e4")
+            };
+
+            Assert.Equal(expectedPositions.Count, possibleMoves.Count);
+            foreach (var pos in expectedPositions)
+            {
+                Assert.Contains(pos, possibleMoves);
+            }
+        }
+
+        [Fact]
+        public void GetPossibleMoves_RookBlocked_ReturnsOnlyUnblockedMoves()
+        {
+            // Arrange
+            var whiteRook = new Rook("White", new Position("a1"));
+            var blockingPawn = new Pawn("White", new Position("a3"));
+            var chessBoard = InitializeCustomBoard(
+                (whiteRook, whiteRook.Position),
+                (blockingPawn, blockingPawn.Position)
+            );
+            var stateService = new StateService(chessBoard);
+
+            // Act
+            var possibleMoves = stateService.GetPossibleMoves(whiteRook);
+
+            // Assert
+            var expectedPositions = new List<Position>
+            {
+                new Position("a2"),
+                new Position("b1"),
+                new Position("c1"),
+                new Position("d1"),
+                new Position("e1"),
+                new Position("f1"),
+                new Position("g1"),
+                new Position("h1")
+            };
+
+            Assert.Equal(expectedPositions.Count, possibleMoves.Count);
+            foreach (var pos in expectedPositions)
+            {
+                Assert.Contains(pos, possibleMoves);
+            }
+            Assert.DoesNotContain(new Position("a3"), possibleMoves);
+        }
+
+        [Fact]
+        public void GetPossibleMoves_BishopWithObstructions_ReturnsDiagonalMovesUntilBlocked()
+        {
+            // Arrange
+            var whiteBishop = new Bishop("White", new Position("c1"));
+            var blockingPawn = new Pawn("White", new Position("e3"));
+            var enemyKnight = new Knight("Black", new Position("a3"));
+            var chessBoard = InitializeCustomBoard(
+                (whiteBishop, whiteBishop.Position),
+                (blockingPawn, blockingPawn.Position),
+                (enemyKnight, enemyKnight.Position)
+            );
+            var stateService = new StateService(chessBoard);
+
+            // Act
+            var possibleMoves = stateService.GetPossibleMoves(whiteBishop);
+
+            // Assert
+            var expectedPositions = new List<Position>
+            {
+                new Position("b2"),
+                new Position("a3"), // Can capture enemy piece
+                new Position("d2"),
+                new Position("e3")  // Blocked by friendly piece, should not be included
+            };
+
+            Assert.Contains(new Position("a3"), possibleMoves); // Capture
+            Assert.Contains(new Position("b2"), possibleMoves);
+            Assert.Contains(new Position("d2"), possibleMoves);
+            Assert.DoesNotContain(new Position("e3"), possibleMoves);
+            Assert.Equal(3, possibleMoves.Count); // Only b2, d2, a3
+        }
+
+        [Fact]
+        public void GetPossibleMoves_KingInCorner_ReturnsValidAdjacentSquares()
+        {
+            // Arrange
+            var blackKing = new King("Black", new Position("h8"));
+            var chessBoard = InitializeCustomBoard(
+                (blackKing, blackKing.Position)
+            );
+            var stateService = new StateService(chessBoard);
+
+            // Act
+            var possibleMoves = stateService.GetPossibleMoves(blackKing);
+
+            // Assert
+            var expectedPositions = new List<Position>
+            {
+                new Position("g7"),
+                new Position("g8"),
+                new Position("h7")
+            };
+
+            Assert.Equal(expectedPositions.Count, possibleMoves.Count);
+            foreach (var pos in expectedPositions)
+            {
+                Assert.Contains(pos, possibleMoves);
+            }
+        }
+
+        [Fact]
+        public void GetPossibleMoves_PawnBlockedByPiece_CannotMoveForward()
+        {
+            // Arrange
+            var whitePawn = new Pawn("White", new Position("e2"));
+            var blockingPawn = new Pawn("Black", new Position("e3"));
+            var chessBoard = InitializeCustomBoard(
+                (whitePawn, whitePawn.Position),
+                (blockingPawn, blockingPawn.Position)
+            );
+            var stateService = new StateService(chessBoard);
+
+            // Act
+            var possibleMoves = stateService.GetPossibleMoves(whitePawn);
+
+            // Assert
+            Assert.Empty(possibleMoves);
+        }
     }
 }

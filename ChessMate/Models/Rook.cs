@@ -27,7 +27,6 @@ public class Rook : ChessPiece
 
         // Check if the path is clear
         if (!MoveValidationHelper.IsPathClear(Position, targetPosition, board)) {
-            Console.WriteLine($"The position {Position} is not clear");
             return false;
         }
 

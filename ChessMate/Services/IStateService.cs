@@ -18,7 +18,7 @@ public interface IStateService
     List<ChessPiece> CapturedPieces { get; }
     List<ChessPiece> GetWhiteAttackers(Position position);
     List<ChessPiece> GetBlackAttackers(Position position);
-
+    List<Position> GetPossibleMoves(ChessPiece piece);
     void SwitchPlayer();
     void SetPlayer(string player);
     void SetEnPassantTarget(Position target, ChessPiece piece);
